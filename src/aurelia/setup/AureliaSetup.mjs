@@ -13,6 +13,9 @@ const { CustomizableUI } = ChromeUtils.importESModule(
 const { AddonManager } = ChromeUtils.importESModule(
   "resource://gre/modules/AddonManager.sys.mjs"
 );
+const { SearchService } = ChromeUtils.importESModule(
+  "moz-src:///toolkit/components/search/SearchService.sys.mjs"
+);
 
 const WIDGET_ID = "aurelia-setup-button";
 const VIEW_ID = "aurelia-setup-view";
@@ -233,9 +236,13 @@ export const AureliaSetup = {
     }
     row.replaceChildren();
     try {
-      await Services.search.init();
-      const engines = await Services.search.getVisibleEngines();
-      const current = (await Services.search.getDefault())?.name;
+      await SearchService.init();
+      const engines = await SearchService.getVisibleEngines();
+      const current = (await SearchService.getDefault())?.name;
+      const reason =
+        SearchService.CHANGE_REASON?.USER ??
+        SearchService.CHANGE_REASON?.UNKNOWN ??
+        0;
       for (const engine of engines.slice(0, 6)) {
         const btn = doc.createXULElement("toolbarbutton");
         btn.classList.add("subviewbutton", "au-seg-button");
@@ -243,16 +250,10 @@ export const AureliaSetup = {
         btn.toggleAttribute("checked", engine.name === current);
         btn.addEventListener("command", async () => {
           try {
-            await Services.search.setDefault(
-              engine,
-              Ci.nsISearchService.CHANGE_REASON_USER
-            );
-            await Services.search.setDefaultPrivate(
-              engine,
-              Ci.nsISearchService.CHANGE_REASON_USER
-            );
-          } catch {
-            Services.search.defaultEngine = engine;
+            await SearchService.setDefault(engine, reason);
+            await SearchService.setDefaultPrivate(engine, reason);
+          } catch (e) {
+            console.error("Aurelia: setDefault failed", e);
           }
           for (const sib of row.children) {
             sib.toggleAttribute("checked", sib === btn);
