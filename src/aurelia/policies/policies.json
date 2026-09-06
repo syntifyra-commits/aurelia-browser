@@ -34,7 +34,7 @@
     "SearchEngines": {
       "Default": "DuckDuckGo",
       "DefaultPrivate": "DuckDuckGo",
-      "Remove": ["Google", "Bing", "Amazon.com", "eBay"]
+      "Remove": ["Bing", "Amazon.com", "eBay"]
     },
     "ExtensionSettings": {
       "uBlock0@raymondhill.net": {

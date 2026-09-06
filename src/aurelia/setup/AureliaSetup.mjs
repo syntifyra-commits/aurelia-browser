@@ -276,7 +276,7 @@ export const AureliaSetup = {
         SearchService.CHANGE_REASON?.USER ??
         SearchService.CHANGE_REASON?.UNKNOWN ??
         0;
-      for (const engine of engines.slice(0, 6)) {
+      for (const engine of engines.slice(0, 8)) {
         const btn = doc.createXULElement("toolbarbutton");
         btn.classList.add("subviewbutton", "au-seg-button");
         btn.setAttribute("label", engine.name);
