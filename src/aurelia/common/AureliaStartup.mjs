@@ -33,6 +33,11 @@ function maybeDebugShot() {
     const ids = { setup: "aurelia-setup-button", menu: "PanelUI-menu-button" };
     win.setTimeout(() => {
       try {
+        if (open === "urlbar") {
+          win.gURLBar.focus();
+          win.gURLBar.search("hello world");
+          return;
+        }
         if (open === "maximize") {
           win.maximize();
           win.setTimeout(() => {

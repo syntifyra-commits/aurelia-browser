@@ -259,9 +259,8 @@ pref("widget.windows.mica", true);
 pref("widget.windows.mica.toplevel-backdrop", 2);
 pref("widget.windows.mica.popups", 2);
 #endif
-pref("browser.tabs.allow_transparent_browser", true);
-pref("browser.display.background_color", "transparent");
-pref("browser.display.background_color.dark", "transparent");
+// content area stays opaque: full-window transparency costs compositor
+// performance and causes paint ghosting; the chrome keeps the acrylic
 
 // ═══ Aurelia UI state (CSS reacts live via -moz-pref branches) ═════════════
 pref("aurelia.theme.mode", 0);       // 0 system · 1 light · 2 dark

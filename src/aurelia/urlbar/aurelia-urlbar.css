@@ -14,27 +14,22 @@
   --urlbar-box-background-color-hover: var(--au-hover-tint);
 }
 
+/* The glass capsule. No transforms and no oversized soft shadows here —
+ * the element doubles as the breakout container for the results view, and
+ * transforms/large blurs on it cause seams and ghost paints. Only the
+ * cheap background-color transition animates. */
 #urlbar .urlbar-background {
   border-radius: var(--au-r-m) !important;
   background: var(--au-l2-tint) !important;
   box-shadow: var(--au-glass-edge) !important;
   border: none !important;
   outline: none !important;
-  transition: transform var(--au-dur-2) var(--au-ease),
-              background-color var(--au-dur-2) var(--au-ease),
-              box-shadow var(--au-dur-2) var(--au-ease);
+  transition: background-color var(--au-dur-2) var(--au-ease);
 }
 
 #urlbar[focused] .urlbar-background {
   background: var(--au-l2-tint-focus) !important;
-  box-shadow: var(--au-glass-edge-deep),
-              0 0 0 1.5px var(--au-aurum-soft) !important;
-}
-
-@media -moz-pref("aurelia.motion.enabled") and (prefers-reduced-motion: no-preference) {
-  #urlbar[focused]:not([breakout-extend]) .urlbar-background {
-    transform: scale(1.015);
-  }
+  box-shadow: var(--au-glass-edge), 0 0 0 1.5px var(--au-aurum-soft) !important;
 }
 
 #urlbar-input {
@@ -44,13 +39,12 @@
   color: var(--au-ink-3) !important;
 }
 
-/* results view: L3 overlay glass, legitimately blurring in-window content */
+/* results view lives inside the breakout capsule — style rows only and let
+ * the capsule provide the glass (own margins/backgrounds here clip against
+ * the breakout bounds) */
 .urlbarView {
-  background: var(--au-l3-tint);
-  border-radius: var(--au-r-l);
-  box-shadow: var(--au-glass-edge-deep);
-  backdrop-filter: var(--au-l2-filter);
-  padding: 6px;
+  padding-inline: 6px;
+  padding-bottom: 6px;
 }
 
 .urlbarView-row {
