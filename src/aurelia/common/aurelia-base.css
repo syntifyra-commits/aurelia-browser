@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* Aurelia base: window transparency plumbing, FOUC guard, drag regions,
- * inactive-window treatment. Preprocessed (#ifdef XP_WIN). */
+ * inactive-window treatment. */
 
 /* hide chrome until AureliaStartup lifts the attribute (fail-safe: it also
  * fades in via transition if scripting is delayed) */
@@ -24,8 +24,7 @@ body {
   border-bottom: none !important;
 }
 
-#ifdef XP_WIN
-@media (-moz-windows-mica) {
+@media (-moz-platform: windows) and (-moz-windows-mica) {
   /* let the OS acrylic show through the sheet at full glass level */
   @media -moz-pref("aurelia.glass.level", 2) {
     :root[windowsmica] {
@@ -33,7 +32,6 @@ body {
     }
   }
 }
-#endif
 
 /* content corner treatment: float the page in the sheet */
 #tabbrowser-tabbox {
@@ -54,8 +52,8 @@ body {
 
 /* inactive window: glass goes quiet */
 :root:-moz-window-inactive {
-  --au-aurum: light-dark(#a9a49a, #8f8b84);
-  --au-edge-light: light-dark(rgb(255 255 255 / 0.4), rgb(255 255 255 / 0.08));
+  --au-aurum: #a09a8e;
+  --au-edge-light: rgb(255 255 255 / 0.28);
 }
 
 /* typography base for chrome text */

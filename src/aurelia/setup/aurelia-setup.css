@@ -4,6 +4,10 @@
 
 /* The Setup panel: quiet L3 glass with segmented choices. */
 
+#aurelia-setup-button {
+  list-style-image: url("chrome://global/skin/icons/settings.svg");
+}
+
 .aurelia-setup-view {
   min-width: 300px;
 }

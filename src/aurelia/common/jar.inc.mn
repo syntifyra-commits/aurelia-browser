@@ -4,4 +4,4 @@
         content/browser/aurelia-components/aurelia-preloaded.js     (../../aurelia/common/aurelia-preloaded.js)
         content/browser/aurelia-components/AureliaStartup.mjs       (../../aurelia/common/AureliaStartup.mjs)
         content/browser/aurelia-styles/aurelia-tokens.css           (../../aurelia/common/aurelia-tokens.css)
-*       content/browser/aurelia-styles/aurelia-base.css             (../../aurelia/common/aurelia-base.css)
+        content/browser/aurelia-styles/aurelia-base.css             (../../aurelia/common/aurelia-base.css)

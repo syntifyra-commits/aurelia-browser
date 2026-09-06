@@ -7,8 +7,9 @@
  *   L1 window sheet   (OS acrylic backdrop; CSS only tints it)
  *   L2 floating glass (nav island, urlbar, tab pills)
  *   L3 overlay glass  (panels, menus, urlbar results)
- * Surface files consume tokens only and never branch on prefs themselves;
- * the degradation ladder below is the single place that adapts materials. */
+ * Tokens hold literal colors swapped via prefers-color-scheme at :root —
+ * per-element color-scheme differences in chrome make light-dark() at use
+ * sites unreliable, so surface files consume uniform resolved tokens. */
 
 :root {
   /* radius scale */
@@ -27,28 +28,28 @@
 
   /* Aurum accent */
   --au-aurum: #d8b26e;
-  --au-aurum-strong: light-dark(#b8934e, #e6c685);
+  --au-aurum-strong: #b8934e;
   --au-aurum-soft: color-mix(in srgb, var(--au-aurum) 24%, transparent);
   --au-aurum-faint: color-mix(in srgb, var(--au-aurum) 12%, transparent);
 
-  /* ink */
-  --au-ink-1: light-dark(#1b1b1f, #f2f1ee);
-  --au-ink-2: light-dark(rgb(27 27 31 / 0.62), rgb(242 241 238 / 0.6));
-  --au-ink-3: light-dark(rgb(27 27 31 / 0.4), rgb(242 241 238 / 0.38));
+  /* ink (light theme) */
+  --au-ink-1: #1b1b1f;
+  --au-ink-2: rgb(27 27 31 / 0.62);
+  --au-ink-3: rgb(27 27 31 / 0.4);
 
-  /* glass materials (tints; blur comes from the OS backdrop or --au-l2-filter) */
-  --au-l1-tint: light-dark(rgb(250 249 247 / 0.4), rgb(19 19 24 / 0.34));
-  --au-l2-tint: light-dark(rgb(255 255 255 / 0.55), rgb(36 36 44 / 0.52));
-  --au-l2-tint-focus: light-dark(rgb(255 255 255 / 0.72), rgb(44 44 52 / 0.66));
-  --au-l3-tint: light-dark(rgb(253 252 250 / 0.82), rgb(38 38 46 / 0.82));
-  --au-hover-tint: light-dark(rgb(255 255 255 / 0.32), rgb(255 255 255 / 0.06));
+  /* glass materials (light theme; blur comes from the OS or --au-l2-filter) */
+  --au-l1-tint: rgb(250 249 247 / 0.4);
+  --au-l2-tint: rgb(255 255 255 / 0.55);
+  --au-l2-tint-focus: rgb(255 255 255 / 0.72);
+  --au-l3-tint: rgb(253 252 250 / 0.86);
+  --au-hover-tint: rgb(20 20 26 / 0.07);
   --au-l2-filter: none;
 
   /* the signature edge: 1px top light line + hairline ring + soft depth */
-  --au-edge-light: light-dark(rgb(255 255 255 / 0.65), rgb(255 255 255 / 0.14));
-  --au-edge-hairline: light-dark(rgb(20 20 24 / 0.1), rgb(255 255 255 / 0.07));
-  --au-shadow-soft: 0 8px 24px -8px light-dark(rgb(20 20 24 / 0.18), rgb(0 0 0 / 0.55));
-  --au-shadow-deep: 0 16px 48px -12px light-dark(rgb(20 20 24 / 0.28), rgb(0 0 0 / 0.7));
+  --au-edge-light: rgb(255 255 255 / 0.65);
+  --au-edge-hairline: rgb(20 20 24 / 0.1);
+  --au-shadow-soft: 0 8px 24px -8px rgb(20 20 24 / 0.18);
+  --au-shadow-deep: 0 16px 48px -12px rgb(20 20 24 / 0.28);
   --au-glass-edge: inset 0 1px 0 0 var(--au-edge-light),
                    inset 0 0 0 1px var(--au-edge-hairline),
                    var(--au-shadow-soft);
@@ -57,11 +58,35 @@
                         var(--au-shadow-deep);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --au-aurum-strong: #e6c685;
+    --au-ink-1: #f2f1ee;
+    --au-ink-2: rgb(242 241 238 / 0.6);
+    --au-ink-3: rgb(242 241 238 / 0.38);
+    --au-l1-tint: rgb(19 19 24 / 0.34);
+    --au-l2-tint: rgb(46 46 56 / 0.55);
+    --au-l2-tint-focus: rgb(56 56 66 / 0.68);
+    --au-l3-tint: rgb(38 38 46 / 0.86);
+    --au-hover-tint: rgb(255 255 255 / 0.07);
+    --au-edge-light: rgb(255 255 255 / 0.14);
+    --au-edge-hairline: rgb(255 255 255 / 0.07);
+    --au-shadow-soft: 0 8px 24px -8px rgb(0 0 0 / 0.55);
+    --au-shadow-deep: 0 16px 48px -12px rgb(0 0 0 / 0.7);
+  }
+}
+
 /* accent kill-switch: Aurum falls back to a quiet neutral */
 @media not -moz-pref("aurelia.accent.enabled") {
   :root {
-    --au-aurum: light-dark(#8a8a92, #a8a8b0);
-    --au-aurum-strong: var(--au-aurum);
+    --au-aurum: #8a8a92;
+    --au-aurum-strong: #8a8a92;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --au-aurum: #a8a8b0;
+      --au-aurum-strong: #a8a8b0;
+    }
   }
 }
 
@@ -74,18 +99,33 @@
 @media -moz-pref("aurelia.glass.level", 1), (not (-moz-windows-mica)) {
   :root {
     --au-l2-filter: blur(24px) saturate(130%);
-    --au-l1-tint: light-dark(rgb(248 247 245 / 0.92), rgb(22 22 27 / 0.94));
-    --au-l2-tint: light-dark(rgb(255 255 255 / 0.78), rgb(40 40 48 / 0.76));
-    --au-l3-tint: light-dark(rgb(253 252 250 / 0.94), rgb(40 40 48 / 0.95));
+    --au-l1-tint: rgb(248 247 245 / 0.92);
+    --au-l2-tint: rgb(255 255 255 / 0.78);
+    --au-l3-tint: rgb(253 252 250 / 0.94);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --au-l1-tint: rgb(22 22 27 / 0.94);
+      --au-l2-tint: rgb(48 48 58 / 0.78);
+      --au-l3-tint: rgb(40 40 48 / 0.95);
+    }
   }
 }
 
 @media -moz-pref("aurelia.glass.level", 0) {
   :root {
     --au-l2-filter: none;
-    --au-l1-tint: light-dark(#f2f0ed, #17171c);
-    --au-l2-tint: light-dark(rgb(255 255 255 / 0.94), rgb(40 40 48 / 0.94));
-    --au-l2-tint-focus: light-dark(#ffffff, #30303a);
-    --au-l3-tint: light-dark(#fcfbf9, #26262e);
+    --au-l1-tint: #f2f0ed;
+    --au-l2-tint: rgb(255 255 255 / 0.94);
+    --au-l2-tint-focus: #ffffff;
+    --au-l3-tint: #fcfbf9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --au-l1-tint: #17171c;
+      --au-l2-tint: rgb(44 44 54 / 0.94);
+      --au-l2-tint-focus: #30303a;
+      --au-l3-tint: #26262e;
+    }
   }
 }

@@ -31,5 +31,5 @@
   background-color: var(--au-hover-tint) !important;
 }
 .titlebar-close:hover {
-  background-color: light-dark(rgb(196 43 28 / 0.85), rgb(196 43 28 / 0.7)) !important;
+  background-color: rgb(196 43 28 / 0.8) !important;
 }

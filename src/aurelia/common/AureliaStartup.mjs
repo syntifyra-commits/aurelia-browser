@@ -14,6 +14,39 @@ function revealChrome() {
   win.document.documentElement.removeAttribute("aureliainit");
 }
 
+/* Dev instrument: AURELIA_SHOT=<path.png> renders this window via Gecko
+ * (compositor-truthful for chrome; transparent areas show the fallback
+ * color, not the OS backdrop). AURELIA_SHOT_DELAY overrides the wait. */
+function maybeDebugShot() {
+  let path;
+  try {
+    path = Services.env.get("AURELIA_SHOT");
+  } catch {
+    return;
+  }
+  if (!path) {
+    return;
+  }
+  const delay = parseInt(Services.env.get("AURELIA_SHOT_DELAY") || "4000", 10);
+  win.setTimeout(() => {
+    try {
+      const c = win.document.createElementNS(
+        "http://www.w3.org/1999/xhtml",
+        "canvas"
+      );
+      c.width = win.innerWidth;
+      c.height = win.innerHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawWindow(win, 0, 0, c.width, c.height, "rgb(0,0,0)");
+      const data = c.toDataURL("image/png").split(",")[1];
+      IOUtils.write(path, Uint8Array.from(atob(data), ch => ch.charCodeAt(0)));
+      console.log("Aurelia: debug shot written to", path);
+    } catch (e) {
+      console.error("Aurelia: debug shot failed", e);
+    }
+  }, delay);
+}
+
 function onWindowReady() {
   try {
     AureliaMotion.init(win);
@@ -25,6 +58,7 @@ function onWindowReady() {
   } catch (e) {
     console.error("Aurelia: setup init failed", e);
   }
+  maybeDebugShot();
   // reveal after two frames so first paint happens fully styled
   win.requestAnimationFrame(() => win.requestAnimationFrame(revealChrome));
 }

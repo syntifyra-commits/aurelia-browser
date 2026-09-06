@@ -4,6 +4,17 @@
 
 /* Tabs as floating glass pills with an Aurum presence line. */
 
+/* remap the stock tab tokens onto the Aurelia glass system — whatever stock
+ * rule paints, it paints our material */
+:root {
+  --tab-background-color-selected: var(--au-l2-tint);
+  --tab-background-color-hover: var(--au-hover-tint);
+  --tab-selected-textcolor: var(--au-ink-1);
+  --tab-selected-color-scheme: light dark;
+  --tab-border-radius: var(--au-r-m);
+  --tab-box-shadow-selected: var(--au-glass-edge);
+}
+
 #tabbrowser-tabs {
   --tab-min-height: 38px;
 }
@@ -13,6 +24,7 @@
 }
 
 .tab-background {
+  position: relative;
   border-radius: var(--au-r-m);
   margin-block: 5px;
   border: none;

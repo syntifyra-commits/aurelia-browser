@@ -8,7 +8,7 @@
  * so the CSS reacts live via -moz-pref() media branches. */
 
 const { CustomizableUI } = ChromeUtils.importESModule(
-  "resource:///modules/CustomizableUI.sys.mjs"
+  "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
 );
 const { AddonManager } = ChromeUtils.importESModule(
   "resource://gre/modules/AddonManager.sys.mjs"
@@ -35,6 +35,13 @@ export const AureliaSetup = {
   init(win) {
     this.ensureWidget();
     this.ensureView(win.document);
+    const placement = CustomizableUI.getPlacementOfWidget(WIDGET_ID);
+    console.log(
+      "Aurelia: setup widget placement:",
+      placement ? `${placement.area}#${placement.position}` : "NONE",
+      "| node in window:",
+      !!win.document.getElementById(WIDGET_ID)
+    );
   },
 
   ensureWidget() {

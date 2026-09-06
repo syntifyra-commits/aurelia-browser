@@ -27,6 +27,7 @@ pref("datareporting.policy.dataSubmissionPolicyAcceptedVersion", 999, locked);
 pref("browser.startup.homepage", "about:blank");
 pref("browser.startup.page", 1);
 pref("browser.newtabpage.enabled", false);
+pref("browser.toolbars.bookmarks.visibility", "never");
 pref("browser.messaging-system.whatsNewPanel.enabled", false);
 pref("messaging-system.rsexperimentloader.enabled", false);
 pref("toolkit.winRegisterApplicationRestart", false);
