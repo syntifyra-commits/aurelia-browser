@@ -267,4 +267,5 @@ pref("aurelia.theme.mode", 0);       // 0 system · 1 light · 2 dark
 pref("aurelia.accent.enabled", true);
 pref("aurelia.glass.level", 2);      // 2 glass · 1 frosted · 0 solid
 pref("aurelia.motion.enabled", true);
+pref("aurelia.startup.animation", true);
 pref("aurelia.privacy.level", 1);    // 1 standard · 2 hardened

@@ -1,0 +1,130 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Startup reveal: the monogram draws itself in gold over an opaque sheet,
+ * the wordmark settles in, then the whole veil lifts. */
+
+#aurelia-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  /* shown as a manual popover — neutralize the UA popover styles */
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: none;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f2ef;
+  transition: opacity 450ms var(--au-ease), transform 450ms var(--au-ease);
+}
+@media (prefers-color-scheme: dark) {
+  #aurelia-splash {
+    background: #17171c;
+  }
+}
+
+#aurelia-splash.au-splash-leave {
+  opacity: 0;
+  transform: scale(1.02);
+  pointer-events: none;
+}
+
+/* the resting urlbar renders in the top layer and would float over the
+ * veil — hold it back until the reveal */
+:root[aurelia-splash] #urlbar {
+  visibility: hidden !important;
+}
+
+.au-splash-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  transform: translateY(-4vh);
+}
+
+.au-splash-logo {
+  width: 108px;
+  height: 108px;
+  filter: drop-shadow(0 0 26px rgb(216 178 110 / 0.22));
+  animation: au-splash-pop 700ms var(--au-ease) both;
+}
+
+.au-splash-a {
+  stroke-dasharray: 1004;
+  stroke-dashoffset: 1004;
+  animation: au-splash-draw 850ms var(--au-ease) 120ms forwards;
+}
+.au-splash-crossbar {
+  stroke-dasharray: 208;
+  stroke-dashoffset: 208;
+  animation: au-splash-draw 420ms var(--au-ease-out) 760ms forwards;
+}
+
+.au-splash-word {
+  font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--au-ink-2);
+  opacity: 0;
+  animation: au-splash-word 600ms var(--au-ease) 880ms forwards;
+}
+
+.au-splash-loading {
+  width: 160px;
+  height: 2px;
+  border-radius: 1px;
+  margin-top: 10px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  color: var(--au-ink-2);
+  overflow: hidden;
+  opacity: 0;
+  animation: au-splash-word 400ms var(--au-ease) 1100ms forwards;
+}
+.au-splash-runner {
+  width: 36%;
+  height: 100%;
+  border-radius: 1px;
+  background: linear-gradient(to right, transparent, #d8b26e, transparent);
+  animation: au-splash-run 1100ms ease-in-out infinite;
+}
+
+@keyframes au-splash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes au-splash-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+}
+
+@keyframes au-splash-word {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes au-splash-run {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}

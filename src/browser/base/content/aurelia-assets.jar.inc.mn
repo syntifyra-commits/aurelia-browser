@@ -8,3 +8,4 @@
 #include ../../../aurelia/urlbar/jar.inc.mn
 #include ../../../aurelia/panels/jar.inc.mn
 #include ../../../aurelia/setup/jar.inc.mn
+#include ../../../aurelia/splash/jar.inc.mn

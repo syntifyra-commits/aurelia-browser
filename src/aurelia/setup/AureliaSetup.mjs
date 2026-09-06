@@ -96,6 +96,9 @@ export const AureliaSetup = {
     body.appendChild(
       this.toggleRow(doc, "au-motion", "Animations", "aurelia.motion.enabled")
     );
+    body.appendChild(
+      this.toggleRow(doc, "au-splash", "Startup animation", "aurelia.startup.animation")
+    );
 
     body.appendChild(this.header(doc, "Search"));
     const searchRow = doc.createXULElement("vbox");

@@ -1,0 +1,40 @@
+diff --git a/services/settings/remote-settings.sys.mjs b/services/settings/remote-settings.sys.mjs
+index b180cfc850ee36dcad3e2886c4bf3bb9d4b748e1..be6c1eaa5aa7a85d119162b0afb2151313140955 100644
+--- a/services/settings/remote-settings.sys.mjs
++++ b/services/settings/remote-settings.sys.mjs
+@@ -21,6 +21,13 @@ ChromeUtils.defineESModuleGetters(lazy, {
+   Utils: "resource://services-settings/Utils.sys.mjs",
+ });
+ 
++// Aurelia: collections whose packaged dump is authoritative — the server
++// copy would overwrite the curated data (e.g. the search engine list).
++const AURELIA_DUMP_ONLY_COLLECTIONS = [
++  "search-config-v2",
++  "search-config-overrides",
++];
++
+ const PREF_SETTINGS_BRANCH = "services.settings.";
+ const PREF_SETTINGS_SERVER_BACKOFF = "server.backoff";
+ const PREF_SETTINGS_LAST_UPDATE = "last_update_seconds";
+@@ -286,6 +293,10 @@ function remoteSettingsFunction() {
+         const collection = changeset.metadata.id;
+         const identifier = `${bucket}/${collection}`;
+ 
++        if (AURELIA_DUMP_ONLY_COLLECTIONS.includes(collection)) {
++          continue;
++        }
++
+         if (pulled.includes(identifier)) {
+           // The startup bundles contain both main and preview changesets.
+           // Importing both increases complexity down the line, and brings no value.
+@@ -532,6 +543,10 @@ function remoteSettingsFunction() {
+     for (const change of changes) {
+       const { bucket, collection, last_modified } = change;
+ 
++      if (AURELIA_DUMP_ONLY_COLLECTIONS.includes(collection)) {
++        continue;
++      }
++
+       const client = await _client(bucket, collection);
+       if (!client) {
+         // This collection has no associated client (eg. preview, other platform...)
