@@ -37,6 +37,18 @@ body {
 #tabbrowser-tabbox {
   margin: 0 8px 8px;
 }
+
+/* Windows maximized windows overhang the screen by the invisible resize
+ * frame (8px per side, measured) — widen the outer margins so the glass
+ * breathing room stays visible instead of clipping at the taskbar */
+@media (-moz-platform: windows) {
+  :root[sizemode="maximized"] #tabbrowser-tabbox {
+    margin: 0 16px 16px;
+  }
+  :root[sizemode="maximized"] #nav-bar {
+    margin-inline: 16px !important;
+  }
+}
 #tabbrowser-tabpanels .browserContainer,
 #tabbrowser-tabpanels browser {
   border-radius: var(--au-r-m);

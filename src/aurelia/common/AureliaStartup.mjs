@@ -33,6 +33,18 @@ function maybeDebugShot() {
     const ids = { setup: "aurelia-setup-button", menu: "PanelUI-menu-button" };
     win.setTimeout(() => {
       try {
+        if (open === "maximize") {
+          win.maximize();
+          win.setTimeout(() => {
+            console.log(
+              "Aurelia: maximized geometry screenXY:", win.screenX, win.screenY,
+              "outer:", win.outerWidth, "x", win.outerHeight,
+              "| screen avail:", win.screen.availWidth, "x", win.screen.availHeight,
+              "| sizemode:", win.document.documentElement.getAttribute("sizemode")
+            );
+          }, 800);
+          return;
+        }
         win.document.getElementById(ids[open] ?? open)?.click();
       } catch (e) {
         console.error("Aurelia: debug open failed", e);
