@@ -1,0 +1,7 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+        content/browser/aurelia-components/aurelia-preloaded.js     (../../aurelia/common/aurelia-preloaded.js)
+        content/browser/aurelia-components/AureliaStartup.mjs       (../../aurelia/common/AureliaStartup.mjs)
+        content/browser/aurelia-styles/aurelia-tokens.css           (../../aurelia/common/aurelia-tokens.css)
+*       content/browser/aurelia-styles/aurelia-base.css             (../../aurelia/common/aurelia-base.css)

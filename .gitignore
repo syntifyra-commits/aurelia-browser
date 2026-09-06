@@ -1,0 +1,8 @@
+.dotbuild/
+.surfer/
+engine/
+firefox-*/
+node_modules/
+dist/
+*.log
+net.log

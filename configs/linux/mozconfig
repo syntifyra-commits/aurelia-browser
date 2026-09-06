@@ -1,0 +1,4 @@
+# Stub — Aurelia v0.1 targets Windows; kept for surfer completeness
+ac_add_options --enable-hardening
+mk_add_options MOZ_TELEMETRY_REPORTING=
+mk_add_options MOZ_DATA_REPORTING=

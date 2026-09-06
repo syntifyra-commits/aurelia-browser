@@ -1,0 +1,34 @@
+{
+  "name": "Aurelia",
+  "vendor": "Aurelia",
+  "appId": "org.aurelia.browser",
+  "binaryName": "aurelia",
+  "version": {
+    "product": "firefox",
+    "version": "155.0.1"
+  },
+  "buildOptions": {
+    "windowsUseSymbolicLinks": false
+  },
+  "addons": {},
+  "brands": {
+    "release": {
+      "backgroundColor": "#16161A",
+      "brandShorterName": "Aurelia",
+      "brandShortName": "Aurelia",
+      "brandFullName": "Aurelia Browser",
+      "release": {
+        "displayVersion": "0.1.0",
+        "github": {
+          "repo": "local/aurelia"
+        }
+      }
+    }
+  },
+  "license": {
+    "ignoredFiles": [
+      ".*\\.json"
+    ],
+    "licenseType": "MPL-2.0"
+  }
+}

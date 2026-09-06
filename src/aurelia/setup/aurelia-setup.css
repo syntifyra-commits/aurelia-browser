@@ -1,0 +1,58 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* The Setup panel: quiet L3 glass with segmented choices. */
+
+.aurelia-setup-view {
+  min-width: 300px;
+}
+
+.au-setup-header {
+  font-size: 0.82em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--au-ink-2);
+  margin: 10px 14px 4px;
+}
+
+.au-setup-note {
+  font-size: 0.78em;
+  color: var(--au-ink-3);
+  margin: 2px 14px 6px;
+}
+
+.au-seg {
+  display: flex;
+  gap: 4px;
+  margin: 2px 12px;
+}
+.au-seg-vertical {
+  flex-direction: column;
+}
+
+.au-seg-button {
+  flex: 1;
+  text-align: center;
+  border-radius: var(--au-r-s) !important;
+  padding: 6px 8px !important;
+  transition: background-color var(--au-dur-1) var(--au-ease),
+              box-shadow var(--au-dur-1) var(--au-ease);
+}
+
+.au-seg-button[checked],
+.au-toggle[checked] {
+  background: var(--au-aurum-faint) !important;
+  box-shadow: inset 0 0 0 1px var(--au-aurum-soft);
+}
+
+.au-toggle {
+  margin: 2px 12px;
+  border-radius: var(--au-r-s) !important;
+}
+
+.au-remove-button {
+  margin: 2px 12px;
+  border-radius: var(--au-r-s) !important;
+  color: var(--au-ink-2);
+}

@@ -1,0 +1,90 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Tabs as floating glass pills with an Aurum presence line. */
+
+#tabbrowser-tabs {
+  --tab-min-height: 38px;
+}
+
+.tabbrowser-tab {
+  padding-inline: 2px;
+}
+
+.tab-background {
+  border-radius: var(--au-r-m);
+  margin-block: 5px;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  transition: background-color var(--au-dur-2) var(--au-ease),
+              box-shadow var(--au-dur-2) var(--au-ease);
+}
+
+/* hover: a hint of glass */
+.tabbrowser-tab:hover:not([selected]) .tab-background {
+  background: var(--au-hover-tint);
+  box-shadow: inset 0 0 0 1px var(--au-edge-hairline);
+}
+
+/* selected: full L2 pill with the signature edge */
+.tabbrowser-tab[visuallyselected] .tab-background,
+.tabbrowser-tab[selected] .tab-background {
+  background: var(--au-l2-tint);
+  box-shadow: var(--au-glass-edge);
+}
+
+/* Aurum presence line, bottom-centered on the active pill */
+.tab-background::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 4px;
+  margin-inline: auto;
+  width: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: linear-gradient(to right, transparent, var(--au-aurum-strong), transparent);
+  opacity: 0;
+  transition: width var(--au-dur-3) var(--au-ease), opacity var(--au-dur-2) var(--au-ease);
+}
+.tabbrowser-tab[visuallyselected] .tab-background::after {
+  width: 24px;
+  opacity: 1;
+}
+
+.tab-content {
+  padding-inline: 12px;
+}
+
+.tab-label {
+  color: var(--au-ink-1);
+}
+.tabbrowser-tab:not([selected]) .tab-label {
+  color: var(--au-ink-2);
+}
+
+/* close button: appears softly */
+.tab-close-button {
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity var(--au-dur-2) var(--au-ease),
+              background-color var(--au-dur-1) var(--au-ease);
+}
+.tabbrowser-tab:hover .tab-close-button,
+.tabbrowser-tab[selected] .tab-close-button {
+  opacity: 0.75;
+}
+.tab-close-button:hover {
+  opacity: 1;
+  background-color: var(--au-hover-tint);
+}
+
+/* new-tab button matches the pill language */
+#tabs-newtab-button,
+#new-tab-button {
+  border-radius: var(--au-r-s);
+}

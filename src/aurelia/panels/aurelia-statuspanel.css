@@ -1,0 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Link-hover status as a small glass pill. */
+
+#statuspanel-label {
+  appearance: none !important;
+  background: var(--au-l3-tint) !important;
+  border: 1px solid var(--au-edge-hairline) !important;
+  border-radius: var(--au-r-s) !important;
+  box-shadow: var(--au-shadow-soft);
+  color: var(--au-ink-1) !important;
+  margin: 0 8px 8px !important;
+  padding: 3px 10px !important;
+  backdrop-filter: var(--au-l2-filter);
+}

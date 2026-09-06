@@ -1,0 +1,22 @@
+{
+  "name": "aurelia-browser",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aurelia — a privacy browser with a fluid glass interface, built on Firefox/Gecko",
+  "license": "MPL-2.0",
+  "scripts": {
+    "download": "surfer download",
+    "import": "surfer import",
+    "export": "surfer export",
+    "bootstrap": "surfer bootstrap",
+    "build": "surfer build",
+    "build:ui": "surfer build --ui",
+    "start": "surfer run",
+    "package": "surfer package",
+    "status": "surfer status"
+  },
+  "devDependencies": {
+    "@zen-browser/surfer": "1.14.9"
+  },
+  "allowScripts": {}
+}

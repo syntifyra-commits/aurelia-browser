@@ -1,0 +1,10 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#include ../../../aurelia/common/jar.inc.mn
+#include ../../../aurelia/motion/jar.inc.mn
+#include ../../../aurelia/toolbar/jar.inc.mn
+#include ../../../aurelia/tabs/jar.inc.mn
+#include ../../../aurelia/urlbar/jar.inc.mn
+#include ../../../aurelia/panels/jar.inc.mn
+#include ../../../aurelia/setup/jar.inc.mn

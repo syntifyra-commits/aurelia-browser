@@ -1,0 +1,10 @@
+diff --git a/browser/base/jar.mn b/browser/base/jar.mn
+index 783c67d397a541a0e78374dc93c930fbd8d2e7e7..2360a4c35600bdf0daeab9b5e135719d47678207 100644
+--- a/browser/base/jar.mn
++++ b/browser/base/jar.mn
+@@ -104,3 +104,5 @@ browser.jar:
+ 
+ # L10n resources and overrides.
+ % override chrome://global/locale/appstrings.properties chrome://browser/locale/appstrings.properties
++
++#include content/aurelia-assets.jar.inc.mn

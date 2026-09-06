@@ -1,0 +1,80 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* The omnibox: an L2 glass capsule that lifts and clarifies on focus.
+ * FF155: <html:moz-urlbar id="urlbar"> (light DOM) with a
+ * <div class="urlbar-background"> glass layer — the one element that
+ * scales, so text never blurs. Tokens are the sanctioned override path. */
+
+:root {
+  --urlbar-background-color: var(--au-l2-tint);
+  --urlbar-background-color-focus: var(--au-l2-tint-focus);
+  --urlbar-border-radius: var(--au-r-m);
+  --urlbar-box-background-color-hover: var(--au-hover-tint);
+}
+
+#urlbar .urlbar-background {
+  border-radius: var(--au-r-m) !important;
+  background: var(--au-l2-tint) !important;
+  box-shadow: var(--au-glass-edge) !important;
+  border: none !important;
+  outline: none !important;
+  transition: transform var(--au-dur-2) var(--au-ease),
+              background-color var(--au-dur-2) var(--au-ease),
+              box-shadow var(--au-dur-2) var(--au-ease);
+}
+
+#urlbar[focused] .urlbar-background {
+  background: var(--au-l2-tint-focus) !important;
+  box-shadow: var(--au-glass-edge-deep),
+              0 0 0 1.5px var(--au-aurum-soft) !important;
+}
+
+@media -moz-pref("aurelia.motion.enabled") and (prefers-reduced-motion: no-preference) {
+  #urlbar[focused]:not([breakout-extend]) .urlbar-background {
+    transform: scale(1.015);
+  }
+}
+
+#urlbar-input {
+  color: var(--au-ink-1) !important;
+}
+#urlbar-input::placeholder {
+  color: var(--au-ink-3) !important;
+}
+
+/* results view: L3 overlay glass, legitimately blurring in-window content */
+.urlbarView {
+  background: var(--au-l3-tint);
+  border-radius: var(--au-r-l);
+  box-shadow: var(--au-glass-edge-deep);
+  backdrop-filter: var(--au-l2-filter);
+  padding: 6px;
+}
+
+.urlbarView-row {
+  border-radius: var(--au-r-s);
+}
+.urlbarView-row:hover {
+  background: var(--au-hover-tint);
+}
+.urlbarView-row[selected] {
+  background: var(--au-aurum-faint);
+}
+.urlbarView-title {
+  color: var(--au-ink-1);
+}
+.urlbarView-url {
+  color: var(--au-ink-2);
+}
+
+/* identity / shield area: calm; Aurum only as the privacy signal accent */
+#identity-box,
+#tracking-protection-icon-container {
+  border-radius: var(--au-r-s);
+}
+#identity-box:hover,
+#tracking-protection-icon-container:hover {
+  background: var(--au-hover-tint);
+}

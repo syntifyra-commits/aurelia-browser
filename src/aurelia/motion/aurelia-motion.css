@@ -1,0 +1,98 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Aurelia motion system. Spectacular in the detail, calm in the whole.
+ * Everything is transform/opacity; nothing animates above a
+ * backdrop-filter region. */
+
+@media -moz-pref("aurelia.motion.enabled") and (prefers-reduced-motion: no-preference) {
+  /* ── tabs: unfold on open, neighbors glide on close ──
+   * Firefox drives open/close through --tab-width-transition and waits for
+   * transitionend(max-width), so we retune the variable, never the property. */
+  .tabbrowser-tab {
+    --tab-width-transition: min-width var(--au-dur-3) var(--au-ease),
+                            max-width var(--au-dur-3) var(--au-ease);
+  }
+  /* closing feels snappier than opening */
+  .tabbrowser-tab:not([fadein]) {
+    --tab-width-transition: min-width var(--au-dur-2) var(--au-ease),
+                            max-width var(--au-dur-2) var(--au-ease);
+  }
+  .tabbrowser-tab[fadein]:not([pinned]) > .tab-stack > .tab-content {
+    animation: au-tab-unfold var(--au-dur-3) var(--au-ease);
+    transform-origin: 16% 85%;
+  }
+
+  /* ── panels & menus: grow from their anchor ── */
+  panel[type="arrow"],
+  menupopup {
+    transform-origin: var(--au-origin, top left);
+    animation: au-pop-in var(--au-dur-2) var(--au-ease);
+  }
+  /* content settles with a soft blur-in, on the inner container only */
+  panelview > .panel-subview-body {
+    animation: au-settle var(--au-dur-3) var(--au-ease-out);
+  }
+  panelmultiview {
+    --panelui-subview-transition-duration: var(--au-dur-2);
+  }
+
+  /* ── buttons: subtle press ── */
+  .toolbarbutton-1 > .toolbarbutton-icon,
+  .toolbarbutton-1 > .toolbarbutton-badge-stack,
+  .titlebar-button > .toolbarbutton-icon,
+  .tab-close-button {
+    transition: transform var(--au-dur-1) var(--au-ease),
+                background-color var(--au-dur-1) var(--au-ease);
+  }
+  .toolbarbutton-1:not([disabled]):active > .toolbarbutton-icon,
+  .toolbarbutton-1:not([disabled]):active > .toolbarbutton-badge-stack,
+  .tab-close-button:active {
+    transform: scale(0.94);
+  }
+}
+
+/* reduced motion (system or aurelia.motion.enabled=false): quiet fades only */
+@media (prefers-reduced-motion: reduce) {
+  panel[type="arrow"],
+  menupopup {
+    animation: au-fade var(--au-dur-1) linear;
+  }
+}
+@media not -moz-pref("aurelia.motion.enabled") {
+  panel[type="arrow"],
+  menupopup {
+    animation: au-fade var(--au-dur-1) linear;
+  }
+}
+
+@keyframes au-tab-unfold {
+  from {
+    opacity: 0;
+    transform: scale(0.86) translateY(4px);
+  }
+}
+
+@keyframes au-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes au-settle {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    filter: blur(0);
+  }
+}
+
+@keyframes au-fade {
+  from {
+    opacity: 0;
+  }
+}

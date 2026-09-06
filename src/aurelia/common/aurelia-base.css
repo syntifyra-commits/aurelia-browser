@@ -1,0 +1,80 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Aurelia base: window transparency plumbing, FOUC guard, drag regions,
+ * inactive-window treatment. Preprocessed (#ifdef XP_WIN). */
+
+/* hide chrome until AureliaStartup lifts the attribute (fail-safe: it also
+ * fades in via transition if scripting is delayed) */
+#main-window[aureliainit] #navigator-toolbox {
+  opacity: 0;
+}
+#navigator-toolbox {
+  transition: opacity 240ms ease-out;
+}
+
+/* window sheet */
+body {
+  background: var(--au-l1-tint) !important;
+}
+
+#navigator-toolbox {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+#ifdef XP_WIN
+@media (-moz-windows-mica) {
+  /* let the OS acrylic show through the sheet at full glass level */
+  @media -moz-pref("aurelia.glass.level", 2) {
+    :root[windowsmica] {
+      background: transparent !important;
+    }
+  }
+}
+#endif
+
+/* content corner treatment: float the page in the sheet */
+#tabbrowser-tabbox {
+  margin: 0 8px 8px;
+}
+#tabbrowser-tabpanels .browserContainer,
+#tabbrowser-tabpanels browser {
+  border-radius: var(--au-r-m);
+}
+#tabbrowser-tabpanels browser {
+  clip-path: inset(0 round var(--au-r-m));
+}
+
+/* keep empty tabs on the glass sheet */
+#tabbrowser-tabpanels {
+  background: transparent !important;
+}
+
+/* inactive window: glass goes quiet */
+:root:-moz-window-inactive {
+  --au-aurum: light-dark(#a9a49a, #8f8b84);
+  --au-edge-light: light-dark(rgb(255 255 255 / 0.4), rgb(255 255 255 / 0.08));
+}
+
+/* typography base for chrome text */
+#navigator-toolbox,
+panel,
+menupopup {
+  font-family: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+}
+
+/* generous, calm toolbar buttons */
+.toolbarbutton-1 {
+  border-radius: var(--au-r-s);
+}
+.toolbarbutton-1 > .toolbarbutton-icon,
+.toolbarbutton-1 > .toolbarbutton-badge-stack {
+  border-radius: var(--au-r-s) !important;
+  transition: background-color var(--au-dur-1) var(--au-ease);
+}
+.toolbarbutton-1:not([disabled]):hover > .toolbarbutton-icon,
+.toolbarbutton-1:not([disabled]):hover > .toolbarbutton-badge-stack {
+  background-color: var(--au-hover-tint) !important;
+}

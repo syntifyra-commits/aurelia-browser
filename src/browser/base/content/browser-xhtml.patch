@@ -1,0 +1,22 @@
+diff --git a/browser/base/content/browser.xhtml b/browser/base/content/browser.xhtml
+index 3f7174e42ae7b887cc76199ccc3e429646142525..13abb4e2c97b546ab9e5c18794e1c58b57e3d0e3 100644
+--- a/browser/base/content/browser.xhtml
++++ b/browser/base/content/browser.xhtml
+@@ -19,6 +19,7 @@
+         retargetdocumentfocus="urlbar-input"
+         scrolling="false"
+         persist="screenX screenY width height sizemode"
++        aureliainit="pending"
+         data-l10n-sync="true">
+ <head>
+   <!-- CSP might be disabled by C++ code. -->
+@@ -108,7 +109,9 @@
+   <title data-l10n-id="browser-main-window-default-title"></title>
+ 
+   <script src="chrome://browser/content/global-scripts.js"></script>
++#include aurelia-preloaded.inc.xhtml
+   <script src="chrome://browser/content/browser-main.js"></script>
++#include aurelia-assets.inc.xhtml
+ </head>
+ <html:body xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ # All sets except for popupsets (commands, keys, and stringbundles)

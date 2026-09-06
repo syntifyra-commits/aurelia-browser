@@ -1,0 +1,35 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Navigation bar as a floating L2 glass island. */
+
+#nav-bar {
+  margin: 2px 8px 6px;
+  padding-inline: 4px;
+  border-radius: var(--au-r-l);
+  background: var(--au-l2-tint) !important;
+  box-shadow: var(--au-glass-edge);
+  border: none !important;
+}
+
+/* tab strip zone stays part of the sheet */
+#TabsToolbar {
+  background: transparent !important;
+}
+
+#PersonalToolbar {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* titlebar caption buttons: quiet, glassy hover */
+.titlebar-button {
+  transition: background-color var(--au-dur-1) var(--au-ease);
+}
+.titlebar-button:hover {
+  background-color: var(--au-hover-tint) !important;
+}
+.titlebar-close:hover {
+  background-color: light-dark(rgb(196 43 28 / 0.85), rgb(196 43 28 / 0.7)) !important;
+}

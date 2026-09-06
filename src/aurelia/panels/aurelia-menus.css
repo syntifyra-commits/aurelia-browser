@@ -1,0 +1,35 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Context menus & XUL menus — Gecko-drawn on Windows, fully styleable. */
+
+menupopup {
+  appearance: none !important;
+  padding: 6px !important;
+  background: var(--au-l3-tint) !important;
+  border: 1px solid var(--au-edge-hairline) !important;
+  border-radius: var(--au-r-m) !important;
+  --nested-margin: 4px;
+}
+
+menuitem,
+menu,
+menucaption {
+  appearance: none !important;
+  border-radius: var(--au-r-s);
+  padding-block: 6px;
+  margin-block: 1px;
+  color: var(--au-ink-1);
+}
+
+menuitem[_moz-menuactive],
+menu[_moz-menuactive] {
+  background-color: var(--au-hover-tint) !important;
+  color: var(--au-ink-1) !important;
+}
+
+menuitem[disabled="true"],
+menu[disabled="true"] {
+  color: var(--au-ink-3) !important;
+}

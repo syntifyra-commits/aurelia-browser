@@ -1,0 +1,33 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Findbar as a detached floating glass capsule over the content. */
+
+findbar {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px 12px !important;
+}
+
+.findbar-container {
+  background: var(--au-l3-tint);
+  border-radius: var(--au-r-l);
+  box-shadow: var(--au-glass-edge);
+  backdrop-filter: var(--au-l2-filter);
+  padding: 6px 10px;
+}
+
+.findbar-textbox {
+  appearance: none !important;
+  background: var(--au-hover-tint) !important;
+  border: 1px solid var(--au-edge-hairline) !important;
+  border-radius: var(--au-r-s) !important;
+  color: var(--au-ink-1) !important;
+  padding: 4px 10px !important;
+  transition: border-color var(--au-dur-2) var(--au-ease);
+}
+.findbar-textbox:focus {
+  border-color: var(--au-aurum-soft) !important;
+  outline: none !important;
+}

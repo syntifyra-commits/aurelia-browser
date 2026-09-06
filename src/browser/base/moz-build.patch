@@ -1,0 +1,12 @@
+diff --git a/browser/base/moz.build b/browser/base/moz.build
+index bb312509ae9167854792e5bfa7adbb96f5361cae..42e8659d9ce39c3463f80e4fc674ae9d78ad3d46 100644
+--- a/browser/base/moz.build
++++ b/browser/base/moz.build
+@@ -72,6 +72,7 @@ BROWSER_CHROME_MANIFESTS += [
+ DIRS += [
+     "content/test/performance/",
+     "content/test/fullscreen/",
++    "../../aurelia",
+ ]
+ 
+ PERFTESTS_MANIFESTS += ["content/test/perftest.toml"]

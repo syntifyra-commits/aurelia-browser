@@ -1,0 +1,172 @@
+ Aurelia — Privacy-Browser als Firefox-Fork (Surfer-Kit, Windows 11)
+
+ Context
+
+ Aurelia wird ein echter, lauffähiger Privacy-Browser auf Gecko-Basis — ein Firefox-155-Fork, gebaut mit @zen-browser/surfer (dem Toolkit von Zen Browser), mit eigener visueller Identität: fluides Glass-Design, spektakuläre aber kontrollierte Animationen, sofort benutzbar ohne Onboarding. Nutzer-Entscheidungen: Gecko-Basis, Surfer-Kit, volle funktionierende Browser-UI, horizontale Tabs. Keine weiteren Anforderungen offen (Nutzer bestätigt).
+
+ Maschine: Win11 Pro, Ryzen 7 9800X3D, 61,6 GB RAM, ~1,5 TB frei. Vorhanden: Git 2.55, winget. Fehlt (Phase 0): Node.js, 7-Zip-PATH, MozillaBuild, VS Build Tools. Projekt: C:\Users\Synti\Desktop\browser (leer; Pfad ohne Leerzeichen = ok).
+
+ Recherche abgeschlossen (3 Agents, live verifiziert): Surfer 1.14.9 aktiv gepflegt; nativer Windows-Build ohne WSL; kompletter Glass-Stack ohne C++-Patches möglich; Privacy-Baseline aus LibreWolf/Mullvad/Zen-Vergleich destilliert.
+
+ ---
+
+ Teil A — Konzept
+
+ Identität
+
+ - Name: Aurelia. Versprechen: „Öffnen. Browsen. Fertig." Kein Onboarding, kein Account, keine Telemetrie-Zustimmung (weil keine Telemetrie existiert). Nur ein optionaler Setup-Button in der Toolbar — selbst entfernbar.
+ - Anti-Ziele: kein Gaming-Look, keine Kopie von Chrome/Arc/Zen, kein Feature-Bombast.
+
+ Designsprache „Vitrum" (Glas als Material)
+
+ Drei Glas-Ebenen: L1 Fenster-Grundfläche (natives Windows-Acrylic), L2 schwebende Flächen (Nav-Insel, Urlbar, Tab-Pillen), L3 Overlays (Panels, Menüs, Urlbar-Ergebnisse — dichtestes Glas). Signatur-Kante: 1px helle Innenlinie oben + Haarlinien-Ring + weicher Schatten (ein box-shadow-Stack, --au-glass-edge). Farbwelt neutral, ein Akzent „Aurum" (#D8B26E, entsättigtes Gold) für Fokus/aktiven Tab/Privacy-Status. Dunkel & hell gleichwertig via light-dark(). Radius-Skala 8/12/16/20px. Typo: system-ui/Inter, ruhig, großzügiger Negativraum.
+
+ Motion-System
+
+ Aurelia-Ease cubic-bezier(0.32,0.72,0,1), Dauern 120/200/320/450ms. Tabs entfalten sich beim Öffnen (scale+opacity aus Ursprung), Nachbarn gleiten beim Schließen fluid nach; Menüs/Panels wachsen aus ihrem Ankerpunkt (transform-origin am Auslöser) mit Blur-Einblendung; Urlbar hebt sich bei Fokus (scale 1.02, Glas klart auf); Buttons Press-Scale 0.97. prefers-reduced-motion + Master-Pref aurelia.motion.enabled → nur Fades.
+
+ UI-Inventar
+
+ Horizontale Glas-Tab-Leiste im Titelbereich · Nav-Insel mit Glas-Omnibox · fast leere New-Tab-Seite (Glas pur, Cursor in Omnibox) · Aurelia-Menü · optionales Setup-Panel (Theme, Akzent, Transparenz, Suchmaschine, Privacy-Stufe, Buttons ein/aus) · Findbar/Kontextmenüs/Statuspanel im Glas-System.
+
+ ---
+
+ Teil B — Technische Architektur
+
+ Basis & Muster
+
+ - Firefox 155.0.1 gepinnt, browser.nova.enabled=false (Mozillas Nova-Redesign ist mitten im Umbau → stabile Proton-Selektoren; Verifikation nach Download, Risiko R4).
+ - Zen-Injektionsmuster: minimale Patches an Firefox, alle Logik in eigenen Dateien. src/ spiegelt mozilla-central; Nicht-.patch-Dateien werden nach engine/ kopiert, .patch via git apply. Patches immer mit npx surfer export-file aus dem editierten engine/-Baum erzeugen (nie blind schreiben).
+
+ Dateibaum (Kern)
+
+ browser\
+ ├── surfer.json                  # name Aurelia, binaryName aurelia, appId org.aurelia.browser,
+ │                                # version.version 155.0.1, brand release #16161A / 0.1.0
+ ├── package.json                 # devDep @zen-browser/surfer@1.14.9 + npm-Scripts (build/build:ui/start/import/export)
+ ├── configs\
+ │   ├── common\mozconfig         # --disable-crashreporter --disable-default-browser-agent --disable-updater,
+ │   │                            # MOZ_TELEMETRY_REPORTING= / MOZ_DATA_REPORTING= / MOZ_CRASHREPORTER=
+ │   ├── windows\mozconfig        # --target=x86_64-pc-windows-msvc, MOZ_MAKE_FLAGS=-j16
+ │   └── branding\release\        # logo.png, firefox.ico/64, logo16..512.png, firefox.icns (Platzhalter aus
+ │                                # engine/browser/branding/unofficial/, später Aurelia-Monogramm: Gold-A auf #16161A)
+ └── src\
+     ├── browser\
+     │   ├── moz-configure.patch              # PFLICHT: MOZ_SERVICES_HEALTHREPORT/MOZ_NORMANDY imply→False
+     │   ├── base\moz-build.patch             # DIRS += ../../aurelia
+     │   ├── base\jar-mn.patch                # #include content/aurelia-assets.jar.inc.mn
+     │   ├── base\content\browser-xhtml.patch # 3 Hunks: aureliainit-Attribut am Root (FOUC-Guard),
+     │   │                                    # include aurelia-preloaded.inc.xhtml vor global-scripts,
+     │   │                                    # include aurelia-assets.inc.xhtml nach browser-main.js
+     │   ├── base\content\aurelia-preloaded.inc.xhtml   # importESModule AureliaStartup.mjs
+     │   ├── base\content\aurelia-assets.inc.xhtml      # <html:link>-Liste aller aurelia-*.css
+     │   ├── base\content\aurelia-assets.jar.inc.mn     # #include der Feature-jar.inc.mn
+     │   ├── app\moz-build.patch              # JS_PREFERENCE_PP_FILES += profile/aurelia.js (nach firefox.js → gewinnt)
+     │   ├── app\profile\aurelia.js           # ALLE Default-Prefs (First-Run, Privacy, Glass, aurelia.*)
+     │   └── installer\package-manifest-in.patch  # BUILT_BY_MOZILLA-Guard um @RESPATH@/distribution/* entfernen
+     ├── services\settings\dumps\main\search-config-v2.json  # Overlay: DDG default, kein Google/Bing
+     └── aurelia\
+         ├── moz.build + policies\{moz.build, policies.json}  # FINAL_TARGET_FILES.distribution
+         ├── common\   AureliaStartup.mjs, aurelia-tokens.css, aurelia-base.css (* preprocessed, #ifdef XP_WIN)
+         ├── motion\   aurelia-motion.css, AureliaMotion.mjs
+         ├── tabs\ toolbar\ urlbar\ panels\   je aurelia-*.css + jar.inc.mn
+         └── setup\    AureliaSetup.mjs, aurelia-setup.css
+ CSS landet unter chrome://browser/content/aurelia-styles/, Module unter .../aurelia-components/.
+
+ Privacy-Defaults (recherchiert & entschieden: „privat ohne Breakage")
+
+ Positionierung: die leere Lücke zwischen Zen (Politur, schwache Privacy) und LibreWolf/Mullvad (Substanz, Breakage). In aurelia.js (kritische Prefs 3-Argument-Form pref(n,v,locked)), policies.json und mozconfig:
+ - Telemetrie komplett tot: Build-Flags + Pflicht-Patch browser/moz.configure (mozconfig allein reicht nachweislich nicht) + Pref-Paket (telemetry/datareporting/normandy/crash/ASRouter/unifiedAds/AI-Stack browser.ml.* aus)
+ - ETP: browser.contentblocking.category="strict" — die davon gesteuerten Prefs NICHT einzeln anfassen (sonst kippt Firefox zur Laufzeit auf „custom"); Allow-List baseline an / convenience aus
+ - Fingerprinting: FPP statt RFP (RFP ist für einen kleinen Fork kontraproduktiv — Breakage ohne Crowd), remoteOverrides an, GPC an
+ - HTTPS-First statt HTTPS-Only (Only nur im PB-Modus) · DoH network.trr.mode=2 (mit Fallback → Captive Portals ok) + Quad9, doh-rollout.enabled=false
+ - Query-Stripping (erweiterte LibreWolf-Liste) · Cookie-Banner-Auto-Reject (cookiebanners.service.mode=1) · WebRTC-Leak-Schutz · Container an · media.eme.require-app-approval=true
+ - SafeBrowsing differenziert: lokale Listen AN (offline, kein Leak), nur browser.safebrowsing.downloads.remote.enabled=false
+ - First-Run: aboutwelcome/preonboarding aus, welcome_url leer, mstone ignore, checkDefaultBrowser aus, datareporting-Bypass-Trio, SkipTermsOfUse + UserMessaging.SkipOnboarding (Policy)
+ - Suche: DDG Default via search-config-v2-Dump-Ersatz + SearchEngines-Policy (Gürtel+Hosenträger; ESR-Gate in 155 vermutlich weg → Grep nach Download, R6); Suchvorschläge aus (lokale History-Vorschläge bleiben)
+ - uBlock Origin fest via ExtensionSettings normal_installed · DisableAppUpdate (lokaler Build, kein Update-Server; bei späterer Distribution zwingend MAR-Signierung + --enable-verify-mar — Zen-CVE GHSA-qpj9-m8jc-mw6q nicht wiederholen)
+ - Hardline-Optionen (RFP, HTTPS-Only, TRR-only …) NUR als „Gehärtet"-Toggle im Setup-Panel
+
+ Glass-Stack Windows 11 (ohne C++)
+
+ widget.windows.mica=true + widget.windows.mica.toplevel-backdrop=2 (Acrylic) + widget.windows.mica.popups=2 (native runde Popup-Ecken) + browser.tabs.allow_transparent_browser=true + browser.display.background_color=transparent + transparente :root/body/#browser/#tabbrowser-tabpanels.
+ Schlüssel-Primitiv: jeder visuelle Toggle = Pref + @media -moz-pref("aurelia.…")-CSS-Branch (live, ohne JS/Neustart). Dazu @media (-moz-windows-mica), light-dark(), :-moz-window-inactive, -moz-window-dragging.
+ Physik-Constraint: XUL-Panels/Menüs sind eigene native Popup-Fenster → CSS-backdrop-filter kann dort nicht die Seite dahinter bluren; Panel-Glas kommt vom OS (mica.popups) bzw. dichteren Tints. Legitime In-Window-Blur-Flächen: Urlbar-Ergebnisse, Findbar, Statuspanel.
+ Degradations-Leiter (nur in aurelia-tokens.css, Surface-Dateien branchen nie): Stufe 2 = Mica+Acrylic; Stufe 1 = backdrop-filter: blur(24px)-Inseln + dichtere Tints (greift automatisch wenn Mica fehlt); Stufe 0 = solide, edel ohne Blur (Kante/Schatten/Tint tragen das Design — nicht der Blur).
+
+ Motion-Implementierung
+
+ - Tab-Entfaltung rein CSS: Firefox animiert Öffnen/Schließen über [fadein] + min/max-width-Transition; tabbrowser.js wartet auf transitionend(max-width) → Transition-Liste beibehalten, au-tab-unfold-Keyframes (scale .86 + translateY 4px → 1) auf .tab-content, Nachbar-Gleiten ist gratis (Width-Reflow mit Aurelia-Ease). Schließen ≤200ms.
+ - Panel-Wachstum aus Anker: AureliaMotion.mjs — ein capturing popupshowing-Listener liest alignmentPosition, setzt --au-origin; CSS: transform-origin: var(--au-origin) + au-pop-in (scale .94 + opacity, 200ms). Blur-Einblendung auf dem Inhalts-Container (.panel-subview-body), nie auf der Acrylic-Fläche. Subview-Slide: --panelui-subview-transition-duration auf Aurelia-Werte.
+ - Urlbar-Lift: #urlbar-background (absolute Glasfläche) transition transform/background/box-shadow; [focused] → scale 1.02 + Aurum-Ring; Stock-urlbar-grow-Keyframes neutralisieren/umstylen.
+ - Gating: alles in @media -moz-pref("aurelia.motion.enabled") and (prefers-reduced-motion: no-preference); Reduce-Zweig = 120ms-Fades.
+
+ Setup-Button & -Panel
+
+ CustomizableUI.createWidget({id:"aurelia-setup-button", type:"view", defaultArea:AREA_NAVBAR}) → per Konstruktion entfernbar (Rechtsklick „Aus Symbolleiste entfernen" / Anpassen-Modus). Panelview ins View-Cache programmatisch (kein 4. browser.xhtml-Hunk). v1-Controls: Theme System/Hell/Dunkel (AddonManager built-in-Themes + aurelia.theme.mode), Akzent an/aus, Transparenz 2/1/0, Motion, Suchmaschine (Services.search.setDefault), Privacy Standard/Gehärtet (Pref-Delta-Tabelle), Toolbar-Buttons inkl. Setup-Button selbst (CustomizableUI.removeWidgetFromArea). Alles persistiert als aurelia.*-Prefs → CSS reagiert live.
+
+ New Tab: Layer A für v0.1
+
+ browser.newtabpage.enabled=false + Homepage about:blank → der leere Tab ist die Acrylic-Glasfläche; Fokus landet nativ in der Urlbar. Null Patches. (Layer B — eigene about:aurelia-Seite mit Uhr/Gruß via components.conf + AboutNewTabRedirector-Patch — optional in Phase 5, behebt dann auch R5.)
+
+ ---
+
+ Teil C — Phasenplan mit Gates
+
+ Iterationsschleife ab Phase 3: Datei ändern → npx surfer import → npx surfer build --ui (= ./mach build faster, Sekunden) → npx surfer run.
+
+ Phase 0 — Toolchain (~30 min; UAC-Prompts → Nutzer-Zustimmung nötig)
+
+ winget: Node 22 LTS, 7-Zip (+PATH), VS 2022 Build Tools mit VCTools-Workload (~8 GB); MozillaBuildSetup-Latest.exe /S → C:\mozilla-build; LongPathsEnabled=1 (Registry, Admin) + git config core.longpaths true. Empfehlung an Nutzer: Defender-Ausnahme fürs Projektverzeichnis (Compile-Speed).
+ Gate 0: node -v=22.x, 7z auflösbar, C:\mozilla-build\start-shell.bat existiert, VS-Workload da.
+
+ Phase 1 — Scaffold, Branding, erster Vollbuild (~1,5–2,5 h, meist unbeaufsichtigt)
+
+ git init + .gitignore (engine/, .surfer/, node_modules/, dist/) → npm i -D @zen-browser/surfer@1.14.9 → npx surfer setup-project → surfer.json auf 155.0.1 pinnen → download (774 MB) → Branding-Platzhalter → import → bootstrap → build als Background-Task → währenddessen Phase-2/3-Dateien vorbereiten.
+ Gate 1: Fenster „Aurelia" öffnet; about:support zeigt aurelia.exe / 155.0.1. Commit.
+
+ Phase 2 — Privacy-Schicht (ein Voll-Rebuild)
+
+ aurelia.js, moz-configure.patch, package-manifest-in.patch, policies/, search-config-v2.json, mozconfig. Vorher Pre-Flight-Greps in engine/ (Policy-Schema-Namen, enterprise_only, nova.enabled, Token-Namen).
+ Gate 2: frisches Profil → keinerlei Prompts; about:policies alle aktiv/0 Fehler; about:telemetry aus; uBO installiert; DDG default. No-Phone-Home-Audit: MOZ_LOG=nsHttp:3 → 3 min idle → Log-Grep; erlaubt nur Quad9, SafeBrowsing-Listen, einmalig AMO (uBO). Alles andere = Fix vor Weiterarbeit.
+
+ Phase 3 — Glass-Fundament
+
+ Injektions-Patches + tokens/base/toolbar/tabs/urlbar-CSS + minimaler AureliaStartup (entfernt aureliainit nach erstem Paint). Tag-1-Hardware-Check: Browser Toolbox → backdrop-filter: blur(42px) auf #urlbar-background über belebter Seite + Scrollen → muss flüssig bleiben; Ergebnis entscheidet Aggressivität von Stufe 1. Shadow-DOM-Audit (moz-urlbar? sidebar-main, moz-button).
+ Gate 3: Screenshots 100 %+150 % Skalierung, hell+dunkel, aktiv+inaktiv: Acrylic durch Toolbar sichtbar, Nav-Insel mit Lichtkante, Tab-Glaspillen, Urlbar-Fokus-Aufklaren, kein weißer Flash beim Fensteröffnen.
+
+ Phase 4 — Motion + Panels/Menüs/Findbar/Statuspanel
+
+ Gate 4: Tab-Entfaltung + Nachbar-Gleiten; Menüs wachsen aus Anker; Urlbar-Lift; Button-Press; mit ui.prefersReducedMotion=1 UND aurelia.motion.enabled=false nur Fades; keine Repaint-Stürme im Performance-Panel.
+
+ Phase 5 — Setup-Panel + New Tab
+
+ Gate 5: Setup-Button öffnet Glas-Panel; jedes Control round-trippt (sofort sichtbar, überlebt Neustart); Button entfernbar + re-addierbar; neuer Tab = leeres Glas, Cursor blinkt in Urlbar.
+
+ Phase 6 — Politur, Packaging, Endabnahme
+
+ Noise-Pass (feTurbulence ~2,5 % nur L3; bei Moiré auf 125/150 % → weglassen), Inaktiv-Zustände, Icon-Art (Aurelia-Monogramm ersetzt Platzhalter), npx surfer package.
+ Gate 6: dist/ enthält Installer mit distribution\policies.json neben aurelia.exe; Clean-Install; Stoppuhr-Test „Start → Tippen in Urlbar in einer Aktion, null Prompts"; No-Phone-Home-Audit auf dem installierten Build; finale Screenshot-Serie.
+
+ ---
+
+ Risiken & Fallbacks
+
+ 1. backdrop-filter-Flakiness (Risiko Nr. 1, Tag-1-Test): Leiter ist eingebaut — Stufe 0 muss ohne Blur edel aussehen (Kante/Schatten/Tint tragen das Design).
+ 2. Popup-Doppel-Frosting (OS-Acrylic + Tint): dann mica.popups=0 + fast-opake L3-Panels — entschiedener Fallback.
+ 3. moz-urlbar Shadow-Root? Vor Urlbar-Styling Grep attachShadow + Toolbox-Inspektion; ggf. ::part()/In-Tree-Patch.
+ 4. nova.enabled-Semantik in 155.0.1 nach Gate 1 visuell verifizieren (Proton-DOM vorhanden?).
+ 5. browser.display.background_color=transparent färbt ungestylte Webseiten glasig — für v0.1 akzeptiert, sauberer Fix = Layer-B-Newtab (Phase 5 entscheiden).
+ 6. SearchEngines-Policy-ESR-Gate in 155 vermutlich entfernt — Grep nach Download; Dump-Ersatz ist ohnehin primär.
+ 7. Remote Settings kann Such-Dump überschreiben → Policy als primäre Durchsetzung, Dump als First-Run-Seed; volle Collection-Allowlist (LibreWolf-Muster) als spätere Härtung.
+ 8. FINAL_TARGET_FILES.distribution-Pfad ggf. falsch → verifizieren, Fallback: Copy-Skript (postbuild).
+ 9. Patch-Hygiene: alle Patches via surfer export-file; bei Import-Fehlern git -C engine checkout . + Re-Import.
+ 10. Admin/UAC: LongPaths-Registry + winget-Installs brauchen sichtbare Nutzer-Zustimmung — nie still eskalieren.
+
+ Verification (Gesamt)
+
+ 1. Erster Start: Doppelklick → browsbar ohne einen einzigen Dialog; Cursor in Omnibox.
+ 2. Glass-UI in hell/dunkel/aktiv/inaktiv auf 100 %+150 %; alle Animationen flüssig; reduced-motion respektiert.
+ 3. Setup-Panel voll funktional; Setup-Button entfernbar.
+ 4. Privacy: about:telemetry aus, about:policies sauber, ETP strict aktiv, MOZ_LOG-Netzwerk-Audit ohne Mozilla/Google-Phone-Home, DDG default, uBO aktiv.
+ 5. surfer package liefert installierbaren Build mit policies.json.

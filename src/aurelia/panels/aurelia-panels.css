@@ -1,0 +1,50 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* Panels (app menu, popovers) as L3 overlay glass. Panels are native popup
+ * windows: their glass comes from widget.windows.mica.popups (OS acrylic) at
+ * full glass level, plus our tint + edge. */
+
+panel,
+menupopup {
+  --panel-background: var(--au-l3-tint);
+  --panel-background-color: var(--au-l3-tint);
+  --panel-border-color: var(--au-edge-hairline);
+  --panel-border-radius: var(--au-r-l);
+  --panel-box-shadow: var(--au-shadow-deep);
+  --panel-color: var(--au-ink-1);
+  --arrowpanel-background: var(--au-l3-tint);
+  --arrowpanel-border-color: var(--au-edge-hairline);
+  --arrowpanel-border-radius: var(--au-r-l);
+  --arrowpanel-color: var(--au-ink-1);
+}
+
+.panel-arrowcontent {
+  box-shadow: var(--au-glass-edge) !important;
+}
+
+panelview {
+  --panel-separator-color: var(--au-edge-hairline);
+}
+
+.panel-subview-body toolbarbutton,
+.subviewbutton {
+  border-radius: var(--au-r-s) !important;
+}
+.subviewbutton:not([disabled]):hover {
+  background-color: var(--au-hover-tint) !important;
+}
+
+.panel-header {
+  color: var(--au-ink-2);
+}
+
+toolbarseparator,
+menuseparator {
+  appearance: none !important;
+  border: none !important;
+  height: 1px;
+  background: var(--au-edge-hairline);
+  margin: 6px 10px;
+}
