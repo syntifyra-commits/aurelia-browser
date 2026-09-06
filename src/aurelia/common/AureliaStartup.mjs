@@ -102,6 +102,27 @@ function onWindowReady() {
     console.error("Aurelia: setup init failed", e);
   }
   maybeDebugShot();
+  // dev self-test: AURELIA_TEST_HARDENED=1 round-trips the arkenfox toggle
+  try {
+    if (Services.env.get("AURELIA_TEST_HARDENED")) {
+      win.setTimeout(() => {
+        AureliaSetup.applyPrivacy(2);
+        console.log(
+          "AURELIA-TEST hardened rfp:",
+          Services.prefs.getBoolPref("privacy.resistFingerprinting", false),
+          "| https-only:",
+          Services.prefs.getBoolPref("dom.security.https_only_mode", false)
+        );
+        AureliaSetup.applyPrivacy(1);
+        console.log(
+          "AURELIA-TEST standard rfp:",
+          Services.prefs.getBoolPref("privacy.resistFingerprinting", false),
+          "| ETP:",
+          Services.prefs.getCharPref("browser.contentblocking.category", "?")
+        );
+      }, 3000);
+    }
+  } catch {}
   // reveal after two frames so first paint happens fully styled
   win.requestAnimationFrame(() => win.requestAnimationFrame(revealChrome));
 }

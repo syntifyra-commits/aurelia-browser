@@ -120,6 +120,11 @@ pref("browser.urlbar.quicksuggest.mlEnabled", false, locked);
 pref("pdfjs.enableAltText", false, locked);
 pref("pdfjs.enableAltTextModelDownload", false, locked);
 
+// Firefox account / Sync: stripped entirely — Aurelia has no cloud identity
+pref("identity.fxaccounts.enabled", false, locked);
+pref("browser.preferences.experimental", false);
+pref("browser.tabs.firefox-view", false);
+
 // misc phone-home & leaks
 pref("browser.uitour.enabled", false, locked);
 pref("browser.uitour.url", "", locked);

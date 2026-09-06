@@ -2,4 +2,5 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
         content/browser/aurelia-components/AureliaSetup.mjs         (../../aurelia/setup/AureliaSetup.mjs)
+        content/browser/aurelia-components/ArkenfoxPrefs.mjs        (../../aurelia/setup/ArkenfoxPrefs.mjs)
         content/browser/aurelia-styles/aurelia-setup.css            (../../aurelia/setup/aurelia-setup.css)

@@ -16,6 +16,10 @@ const { AddonManager } = ChromeUtils.importESModule(
 const { SearchService } = ChromeUtils.importESModule(
   "moz-src:///toolkit/components/search/SearchService.sys.mjs"
 );
+import {
+  ARKENFOX_PREFS,
+  ARKENFOX_VERSION,
+} from "chrome://browser/content/aurelia-components/ArkenfoxPrefs.mjs";
 
 const WIDGET_ID = "aurelia-setup-button";
 const VIEW_ID = "aurelia-setup-view";
@@ -26,12 +30,13 @@ const THEME_IDS = {
   2: "firefox-compact-dark@mozilla.org",
 };
 
-/* prefs flipped by the single "Hardened" toggle; standard mode clears them */
-const HARDENED_DELTAS = [
-  ["privacy.resistFingerprinting", true],
-  ["privacy.resistFingerprinting.letterboxing", true],
-  ["dom.security.https_only_mode", true],
-  ["network.trr.mode", 3],
+/* pre-arkenfox hardened prefs — still cleared on Standard so profiles that
+ * used the old toggle come back clean */
+const LEGACY_HARDENED = [
+  "privacy.resistFingerprinting",
+  "privacy.resistFingerprinting.letterboxing",
+  "dom.security.https_only_mode",
+  "network.trr.mode",
 ];
 
 export const AureliaSetup = {
@@ -107,7 +112,7 @@ export const AureliaSetup = {
     );
     const note = doc.createElement("label");
     note.classList.add("au-setup-note");
-    note.textContent = "Hardened blocks more fingerprinting but may break some sites.";
+    note.textContent = `Hardened applies the full arkenfox user.js (v${ARKENFOX_VERSION}). Sites may break; some changes need a restart.`;
     body.appendChild(note);
 
     body.appendChild(this.header(doc, "This button"));
@@ -179,16 +184,51 @@ export const AureliaSetup = {
     }
   },
 
+  /* Hardened = the full arkenfox user.js, applied verbatim to the user
+   * branch (exactly what dropping the file into a profile does). Standard
+   * clears every arkenfox pref so Aurelia's own defaults resurface. */
   applyPrivacy(level) {
-    for (const [name, value] of HARDENED_DELTAS) {
-      if (level === 2) {
-        if (typeof value === "boolean") {
-          Services.prefs.setBoolPref(name, value);
-        } else {
-          Services.prefs.setIntPref(name, value);
+    if (level === 2) {
+      for (const [name, value] of ARKENFOX_PREFS) {
+        try {
+          if (typeof value === "boolean") {
+            Services.prefs.setBoolPref(name, value);
+          } else if (typeof value === "number") {
+            Services.prefs.setIntPref(name, value);
+          } else {
+            Services.prefs.setStringPref(name, value);
+          }
+        } catch (e) {
+          console.warn("Aurelia: arkenfox pref skipped:", name, e.message);
         }
-      } else {
-        Services.prefs.clearUserPref(name);
+      }
+      console.log(`Aurelia: hardened mode ON (arkenfox ${ARKENFOX_VERSION})`);
+    } else {
+      for (const [name] of ARKENFOX_PREFS) {
+        try {
+          Services.prefs.clearUserPref(name);
+        } catch {}
+      }
+      for (const name of LEGACY_HARDENED) {
+        try {
+          Services.prefs.clearUserPref(name);
+        } catch {}
+      }
+      // clearing may have dropped the ETP category — restore Aurelia strict
+      try {
+        const { ContentBlockingPrefs } = ChromeUtils.importESModule(
+          "moz-src:///browser/components/protections/ContentBlockingPrefs.sys.mjs"
+        );
+        if (!ContentBlockingPrefs.CATEGORY_PREFS) {
+          ContentBlockingPrefs.setPrefExpectations();
+        }
+        ContentBlockingPrefs.setPrefsToCategory("strict");
+        Services.prefs.setStringPref(
+          "browser.contentblocking.category",
+          "strict"
+        );
+      } catch (e) {
+        console.error("Aurelia: strict restore failed", e);
       }
     }
     Services.prefs.setIntPref("aurelia.privacy.level", level);
