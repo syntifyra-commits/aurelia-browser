@@ -5,8 +5,9 @@
 /* Aurelia base: window transparency plumbing, FOUC guard, drag regions,
  * inactive-window treatment. */
 
-/* hide chrome until AureliaStartup lifts the attribute (fail-safe: it also
- * fades in via transition if scripting is delayed) */
+/* hide chrome until the aureliainit attribute is lifted — by AureliaStartup
+ * after first paint, or by the timeout/catch fail-safes in
+ * aurelia-preloaded.js if the startup module chain fails to load */
 #main-window[aureliainit] #navigator-toolbox {
   opacity: 0;
 }
@@ -57,15 +58,39 @@ body {
   clip-path: inset(0 round var(--au-r-m));
 }
 
+/* fullscreen: drop the glass margins AND the rounded clip — the rounded
+ * clip's mask blocks WebRender's DirectComposition overlay promotion, so
+ * fullscreen video would lose hardware overlay scanout */
+:root:is([inFullscreen], [inDOMFullscreen]) #tabbrowser-tabbox {
+  margin: 0;
+}
+:root:is([inFullscreen], [inDOMFullscreen]) #tabbrowser-tabpanels .browserContainer,
+:root:is([inFullscreen], [inDOMFullscreen]) #tabbrowser-tabpanels browser {
+  border-radius: 0;
+  clip-path: none;
+}
+
 /* keep empty tabs on the glass sheet */
 #tabbrowser-tabpanels {
   background: transparent !important;
 }
 
-/* inactive window: glass goes quiet */
+/* inactive window: glass goes quiet — the light value would be BRIGHTER
+ * than the dark theme's active 0.14, so dark mode gets its own step down */
 :root:-moz-window-inactive {
   --au-aurum: #a09a8e;
   --au-edge-light: rgb(255 255 255 / 0.28);
+}
+@media (prefers-color-scheme: dark) {
+  :root:-moz-window-inactive {
+    --au-edge-light: rgb(255 255 255 / 0.07);
+  }
+}
+
+/* Firefox View depends on the stripped FxA/Sync stack — hide its menu entry
+ * (the toolbar button placement is removed in AureliaSetup) */
+#menu_openFirefoxView {
+  display: none !important;
 }
 
 /* typography base for chrome text */

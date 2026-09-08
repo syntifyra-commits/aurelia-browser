@@ -2,15 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Context menus & XUL menus — Gecko-drawn on Windows, fully styleable. */
+/* Context menus & XUL menus. The popup frame itself is themed through the
+ * --panel-* tokens in aurelia-panels.css (FF155 draws it on the shadow-DOM
+ * ::part(content); under Windows mica popups the OS draws it) — this file
+ * only styles the items. --panel-padding-block feeds both the content
+ * padding and Gecko's nested-submenu alignment, so submenus stay aligned. */
 
 menupopup {
-  appearance: none !important;
-  padding: 6px !important;
-  background: var(--au-l3-tint) !important;
-  border: 1px solid var(--au-edge-hairline) !important;
-  border-radius: var(--au-r-m) !important;
-  --nested-margin: 4px;
+  --panel-padding-block: 6px;
 }
 
 menuitem,

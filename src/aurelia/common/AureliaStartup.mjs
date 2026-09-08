@@ -10,7 +10,7 @@ import { AureliaSetup } from "chrome://browser/content/aurelia-components/Aureli
 
 const win = window;
 
-const PROFILE_STAMP = 2;
+const PROFILE_STAMP = 3;
 const SPLASH_MIN_MS = 1600;
 
 function revealChrome() {
@@ -65,25 +65,46 @@ async function ensureProfileStamp() {
       console.error("Aurelia: search config refresh failed", e);
     }
   }
+
+  // v3: drop a firefox-view-button placement carried over from pre-Aurelia
+  // profiles. One-time on purpose — a user who re-adds the button in
+  // Customize mode afterwards keeps it (FF155 has no kill pref; the menubar
+  // entry is hidden in CSS).
+  if (current < 3) {
+    try {
+      const { CustomizableUI } = ChromeUtils.importESModule(
+        "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs"
+      );
+      CustomizableUI.removeWidgetFromArea("firefox-view-button");
+    } catch (e) {
+      console.error("Aurelia: firefox-view cleanup failed", e);
+    }
+  }
 }
 
 /* Startup reveal: the Aurelia monogram draws itself in gold over an opaque
  * sheet, then the chrome fades through. First window of the session only;
  * any input skips it; slow starts get a shimmer bar. */
+function isFirstBrowserWindow() {
+  let count = 0;
+  for (const _ of Services.wm.getEnumerator("navigator:browser")) {
+    count++;
+  }
+  return count <= 1;
+}
+
+/* Returns the ms until the veil starts its leave fade (0 = no splash), so
+ * followers like the onboarding can wait for the actual teardown. */
 function showSplash() {
   try {
     if (!Services.prefs.getBoolPref("aurelia.startup.animation", true)) {
-      return;
+      return 0;
     }
     if (win.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
+      return 0;
     }
-    let count = 0;
-    for (const _ of Services.wm.getEnumerator("navigator:browser")) {
-      count++;
-    }
-    if (count > 1) {
-      return;
+    if (!isFirstBrowserWindow()) {
+      return 0;
     }
     const doc = win.document;
     const overlay = doc.createElement("div");
@@ -130,14 +151,107 @@ function showSplash() {
     };
     overlay.addEventListener("pointerdown", finish);
     win.addEventListener("keydown", finish, { once: true, capture: true });
-    win.setTimeout(finish, slow ? SPLASH_MIN_MS + 900 : SPLASH_MIN_MS);
+    const finishAt = slow ? SPLASH_MIN_MS + 900 : SPLASH_MIN_MS;
+    win.setTimeout(finish, finishAt);
     win.setTimeout(() => {
       doc.documentElement.removeAttribute("aurelia-splash");
       overlay.remove();
     }, 6000); // hard failsafe
+    return finishAt;
   } catch (e) {
     console.error("Aurelia: splash failed", e);
+    return 0;
   }
+}
+
+/* Optional first-run onboarding: opens the Setup panel once, with a welcome
+ * header. Closing the panel is skipping — it never comes back (done stamp);
+ * aurelia.onboarding.enabled=false suppresses it entirely. */
+function maybeOnboard(splashFinishAt) {
+  try {
+    if (!Services.prefs.getBoolPref("aurelia.onboarding.enabled", true)) {
+      return;
+    }
+    if (Services.prefs.getBoolPref("aurelia.onboarding.done", false)) {
+      return;
+    }
+    if (!isFirstBrowserWindow()) {
+      return;
+    }
+    // wait for the veil's leave fade (450ms) plus a beat of quiet
+    const delay = splashFinishAt ? splashFinishAt + 650 : 800;
+    win.setTimeout(() => {
+      try {
+        Services.prefs.setBoolPref("aurelia.onboarding.done", true);
+        AureliaSetup.beginOnboarding(win);
+      } catch (e) {
+        console.error("Aurelia: onboarding failed", e);
+      }
+    }, delay);
+  } catch (e) {
+    console.error("Aurelia: onboarding failed", e);
+  }
+}
+
+/* www. fallback: Firefox fixes a bare "example.com" up to the apex host and
+ * never retries it — sites that only serve www. then hit an error page.
+ * When a top-level http(s) load of an apex host (no subdomain) fails with a
+ * DNS or connection-refused error, retry once with www. prepended. Loop-free
+ * by construction: www.<host> has a subdomain, so it never qualifies again.
+ * Pref: aurelia.urlbar.wwwFallback. */
+const WWW_RETRY_ERRORS = new Set([
+  Cr.NS_ERROR_UNKNOWN_HOST,
+  Cr.NS_ERROR_CONNECTION_REFUSED,
+]);
+
+function initWwwFallback() {
+  const gBrowser = win.gBrowser;
+  if (!gBrowser) {
+    return;
+  }
+  const { STATE_STOP, STATE_IS_NETWORK } = Ci.nsIWebProgressListener;
+  gBrowser.addTabsProgressListener({
+    onStateChange(browser, webProgress, request, stateFlags, status) {
+      try {
+        if (!(stateFlags & STATE_STOP) || !(stateFlags & STATE_IS_NETWORK)) {
+          return;
+        }
+        if (!WWW_RETRY_ERRORS.has(status) || !webProgress?.isTopLevel) {
+          return;
+        }
+        if (!Services.prefs.getBoolPref("aurelia.urlbar.wwwFallback", true)) {
+          return;
+        }
+        if (!(request instanceof Ci.nsIChannel)) {
+          return;
+        }
+        const uri = request.URI;
+        if (!uri || (uri.scheme !== "http" && uri.scheme !== "https")) {
+          return;
+        }
+        const host = uri.host;
+        if (!host || host.startsWith("www.")) {
+          return;
+        }
+        let base;
+        try {
+          base = Services.eTLD.getBaseDomainFromHost(host);
+        } catch {
+          return; // IP literal or single-label host — nothing to prepend to
+        }
+        if (base !== host) {
+          return; // already has a subdomain
+        }
+        const www = uri.mutate().setHost(`www.${host}`).finalize();
+        browser.fixupAndLoadURIString(www.spec, {
+          triggeringPrincipal:
+            Services.scriptSecurityManager.getSystemPrincipal(),
+        });
+      } catch (e) {
+        console.error("Aurelia: www fallback failed", e);
+      }
+    },
+  });
 }
 
 /* Dev instrument: AURELIA_SHOT=<path.png> renders this window via Gecko.
@@ -207,7 +321,7 @@ function maybeDebugShot() {
 
 function onWindowReady() {
   ensureProfileStamp().catch(console.error);
-  showSplash();
+  const splashFinishAt = showSplash();
   try {
     AureliaMotion.init(win);
   } catch (e) {
@@ -218,6 +332,12 @@ function onWindowReady() {
   } catch (e) {
     console.error("Aurelia: setup init failed", e);
   }
+  try {
+    initWwwFallback();
+  } catch (e) {
+    console.error("Aurelia: www fallback init failed", e);
+  }
+  maybeOnboard(splashFinishAt);
   maybeDebugShot();
   // dev self-test: AURELIA_TEST_HARDENED=1 round-trips the arkenfox toggle
   try {

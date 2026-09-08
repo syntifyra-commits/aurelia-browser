@@ -6,7 +6,8 @@
   "license": "MPL-2.0",
   "scripts": {
     "download": "surfer download",
-    "import": "surfer import",
+    "import": "surfer import && node scripts/sync-mozconfig.mjs",
+    "sync-mozconfig": "node scripts/sync-mozconfig.mjs",
     "export": "surfer export",
     "bootstrap": "surfer bootstrap",
     "build": "surfer build",
@@ -16,7 +17,8 @@
     "status": "surfer status"
   },
   "devDependencies": {
-    "@zen-browser/surfer": "1.14.9"
+    "@zen-browser/surfer": "1.14.9",
+    "sharp": "^0.32.6"
   },
   "allowScripts": {}
 }

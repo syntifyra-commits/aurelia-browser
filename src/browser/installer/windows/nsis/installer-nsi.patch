@@ -1,0 +1,28 @@
+diff --git a/browser/installer/windows/nsis/installer.nsi b/browser/installer/windows/nsis/installer.nsi
+index 785e5ccfba..ebddd07db9 100644
+--- a/browser/installer/windows/nsis/installer.nsi
++++ b/browser/installer/windows/nsis/installer.nsi
+@@ -228,6 +228,9 @@ Page custom preSummary leaveSummary
+ ; Finish Page
+ !define MUI_FINISHPAGE_TITLE_3LINES
+ !define MUI_FINISHPAGE_RUN
++; Aurelia: never auto-launch the browser from the installer — the box is a
++; user choice, unchecked by default.
++!define MUI_FINISHPAGE_RUN_NOTCHECKED
+ !define MUI_FINISHPAGE_RUN_FUNCTION LaunchApp
+ !define MUI_FINISHPAGE_RUN_TEXT $(LAUNCH_TEXT)
+ !define MUI_PAGE_CUSTOMFUNCTION_PRE preFinish
+@@ -745,10 +748,9 @@ Section "-Application" APP_IDX
+                      "DidRegisterDefaultBrowserAgent" $RegisterDefaultAgent
+ !endif
+ 
+-; Return value is saved to an unused variable to prevent the the error flag
+-; from being set.
+-Var /GLOBAL UnusedExecCatchReturn
+-ExecWait '"$INSTDIR\${FileMainEXE}" --backgroundtask install' $UnusedExecCatchReturn
++; Aurelia: upstream ran `--backgroundtask install` here, but this build has
++; backgroundtasks disabled, so the flag would start a FULL browser and the
++; blocking ExecWait would stall the installer until the user closed it.
+ SectionEnd
+ 
+ ; Cleanup operations to perform at the end of the installation.

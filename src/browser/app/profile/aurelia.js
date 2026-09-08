@@ -28,12 +28,16 @@ pref("browser.startup.homepage", "about:blank");
 pref("browser.startup.page", 1);
 pref("browser.newtabpage.enabled", false);
 pref("browser.toolbars.bookmarks.visibility", "never");
-pref("browser.messaging-system.whatsNewPanel.enabled", false);
-pref("messaging-system.rsexperimentloader.enabled", false);
 pref("toolkit.winRegisterApplicationRestart", false);
 
 // pin the stable Proton UI branch (Nova redesign is mid-flight upstream)
 pref("browser.nova.enabled", false);
+
+// The app is branded "aurelia", so its UA token is "aurelia/155.0" and the
+// "Firefox/155.0" compatibility token is dropped — which makes AMO and other
+// UA-sniffing sites treat the browser as unknown/incompatible. Re-add the
+// Firefox token (nsHttpHandler mCompatFirefoxEnabled) so extensions install.
+pref("general.useragent.compatMode.firefox", true);
 
 // ═══ Telemetry & phone-home (belt; configure patch is the braces) ══════════
 pref("toolkit.telemetry.unified", false, locked);
@@ -45,20 +49,15 @@ pref("toolkit.telemetry.updatePing.enabled", false, locked);
 pref("toolkit.telemetry.firstShutdownPing.enabled", false, locked);
 pref("toolkit.telemetry.shutdownPingSender.enabled", false, locked);
 pref("toolkit.telemetry.bhrPing.enabled", false, locked);
-pref("toolkit.telemetry.coverage.opt-out", true, locked);
 pref("toolkit.coverage.opt-out", true, locked);
 pref("toolkit.coverage.enabled", false, locked);
 pref("toolkit.coverage.endpoint.base", "", locked);
 pref("datareporting.healthreport.uploadEnabled", false, locked);
 pref("datareporting.policy.dataSubmissionEnabled", false, locked);
 pref("datareporting.usage.uploadEnabled", false, locked);
-pref("dom.private-attribution.submission.enabled", false, locked);
-pref("browser.ping-centre.telemetry", false);
-pref("browser.attribution.enabled", false);
 pref("browser.newtabpage.activity-stream.telemetry", false, locked);
 pref("browser.newtabpage.activity-stream.feeds.telemetry", false, locked);
 pref("browser.search.serpEventTelemetryCategorization.enabled", false);
-pref("security.xfocsp.errorReporting.enabled", false);
 pref("captchadetection.actor.enabled", false);
 pref("toolkit.contentRelevancy.enabled", false);
 pref("toolkit.contentRelevancy.ingestEnabled", false);
@@ -94,9 +93,7 @@ pref("browser.topsites.contile.enabled", false);
 pref("browser.topsites.useRemoteSetting", false);
 pref("identity.fxaccounts.toolbar.pxiToolbarEnabled", false, locked);
 pref("browser.vpn_promo.enabled", false, locked);
-pref("browser.promo.focus.enabled", false, locked);
 pref("browser.preferences.moreFromMozilla", false, locked);
-pref("browser.privatebrowsing.vpnpromourl", "", locked);
 pref("signon.firefoxRelay.feature", "disabled");
 pref("browser.newtabpage.activity-stream.asrouter.providers.cfr", "null", locked);
 pref("browser.newtabpage.activity-stream.asrouter.providers.message-groups", "null", locked);
@@ -123,7 +120,9 @@ pref("pdfjs.enableAltTextModelDownload", false, locked);
 // Firefox account / Sync: stripped entirely — Aurelia has no cloud identity
 pref("identity.fxaccounts.enabled", false, locked);
 pref("browser.preferences.experimental", false);
-pref("browser.tabs.firefox-view", false);
+// Firefox View has no kill pref in FF155 — a leftover toolbar button
+// placement is removed once by the profile stamp (AureliaStartup v3) and
+// the menu item is hidden via CSS.
 
 // misc phone-home & leaks
 pref("browser.uitour.enabled", false, locked);
@@ -154,8 +153,8 @@ pref("network.cookie.cookieBehavior.optInPartitioning.pbmode", true);
 pref("privacy.query_stripping.strip_on_share.enabled", true);
 pref("privacy.query_stripping.allow_list", "urldefense.com");
 pref("privacy.query_stripping.strip_list", "__hsfp __hssc __hstc __s _bhlid _branch_match_id _branch_referrer _gl _hsenc _openstat at_recipient_id at_recipient_list bbeml bsft_clkid bsft_uid dclid et_rid fb_action_ids fb_comment_id gbraid fbclid gclid guce_referrer guce_referrer_sig hsCtaTracking irclickid mc_eid ml_subscriber ml_subscriber_hash msclkid mtm_cid oft_c oft_ck oft_d oft_id oft_ids oft_k oft_lk oft_sk oly_anon_id oly_enc_id pk_cid rb_clickid s_cid sc_customer sc_eh sc_uid sfmc_activityid sfmc_id sms_click sms_source sms_uph srsltid ss_email_id syclid ttclid twclid unicorn_click_id vero_conv vero_id vgo_ee wbraid wickedid yclid ymclid ysclid");
-pref("cookiebanners.service.mode", 1);
-pref("cookiebanners.service.mode.privateBrowsing", 1);
+// Cookie banner rejection: the cookiebanners service was removed in FF155;
+// ETP strict's consent-manager blocking (-consentmanagerSkip*) covers it.
 
 // fingerprinting: FPP (crowd-free, per-site randomization), NOT RFP
 pref("privacy.fingerprintingProtection", true);
@@ -163,7 +162,10 @@ pref("privacy.fingerprintingProtection.pbmode", true);
 pref("privacy.fingerprintingProtection.remoteOverrides.enabled", true);
 pref("privacy.resistFingerprinting", false);
 pref("privacy.resistFingerprinting.letterboxing", false);
-pref("privacy.resistFingerprinting.block_mozAddonManager", true);
+// keep navigator.mozAddonManager working: blocking it (Tor-style hardening)
+// makes addons.mozilla.org refuse to install extensions — Hardened re-enables
+// it via arkenfox. AMO is Mozilla-signed, so this is no install-safety loss.
+pref("privacy.resistFingerprinting.block_mozAddonManager", false);
 pref("privacy.globalprivacycontrol.enabled", true);
 pref("privacy.globalprivacycontrol.pbmode.enabled", true);
 pref("privacy.globalprivacycontrol.functionality.enabled", true);
@@ -241,6 +243,9 @@ pref("browser.urlbar.addons.featureGate", false);
 pref("browser.urlbar.mdn.featureGate", false);
 pref("browser.urlbar.yelp.featureGate", false);
 pref("browser.urlbar.dnsResolveSingleWordsAfterSearch", 0);
+// bare "example.com" fixes up to the apex host and Firefox never retries;
+// Aurelia retries once with www. when the apex fails (DNS/refused)
+pref("aurelia.urlbar.wwwFallback", true);
 pref("browser.search.update", false);
 pref("browser.search.separatePrivateDefault", true);
 pref("keyword.enabled", true);
@@ -267,5 +272,8 @@ pref("aurelia.theme.mode", 0);       // 0 system · 1 light · 2 dark
 pref("aurelia.accent.enabled", true);
 pref("aurelia.glass.level", 2);      // 2 glass · 1 frosted · 0 solid
 pref("aurelia.motion.enabled", true);
+pref("aurelia.motion.flair", true);  // showpiece animations (swipes, springs)
 pref("aurelia.startup.animation", true);
 pref("aurelia.privacy.level", 1);    // 1 standard · 2 hardened
+pref("aurelia.onboarding.enabled", true); // optional first-run setup panel
+pref("aurelia.onboarding.done", false);

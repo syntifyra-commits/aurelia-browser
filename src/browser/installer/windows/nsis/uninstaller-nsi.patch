@@ -1,0 +1,38 @@
+diff --git a/browser/installer/windows/nsis/uninstaller.nsi b/browser/installer/windows/nsis/uninstaller.nsi
+index becbb0f70c..b4fe2a0a4b 100644
+--- a/browser/installer/windows/nsis/uninstaller.nsi
++++ b/browser/installer/windows/nsis/uninstaller.nsi
+@@ -415,14 +415,10 @@ Section "Uninstall"
+   DetailPrint $(STATUS_UNINSTALL_MAIN)
+   SetDetailsPrint none
+ 
+-  ; Some system cleanup is most easily handled when XPCOM functionality is
+-  ; available - e.g. removing notifications from Window's Action Center. We
+-  ; handle this in the `uninstall` background task.
+-  ;
+-  ; Return value is saved to an unused variable to prevent the the error flag
+-  ; from being set.
+-  Var /GLOBAL UnusedExecCatchReturn
+-  ExecWait '"$INSTDIR\${FileMainEXE}" --backgroundtask uninstall' $UnusedExecCatchReturn
++  ; Aurelia: upstream ran `--backgroundtask uninstall` here (Action Center
++  ; cleanup), but this build has backgroundtasks disabled, so the flag would
++  ; start a FULL browser: the blocking ExecWait stalled the uninstaller and
++  ; the running exe then broke the DeleteFile below (files-in-use path).
+ 
+   ; Uninstall the default browser agent scheduled task and all other scheduled
+   ; tasks registered by Firefox.
+@@ -1073,12 +1069,10 @@ Function un.onInit
+   Pop $1
+   GetFullPathName $1 $1
+ 
+-  ; If there is an existing default profile, offer profile refresh.
++  ; Aurelia: never offer profile refresh from the uninstaller — the refresh
++  ; button relaunched the browser mid-uninstall.
+   StrCpy $ShouldPromptForRefresh "0"
+   StrCpy $RefreshRequested "0"
+-  ${If} $1 != ""
+-    StrCpy $ShouldPromptForRefresh "1"
+-  ${EndIf}
+ 
+   ; Load version info for uninstall ping (sent after uninstall is complete)
+   ReadINIStr $InstalledVersion "$INSTDIR\application.ini" "App" "Version"

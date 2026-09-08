@@ -13,5 +13,7 @@
   color: var(--au-ink-1) !important;
   margin: 0 8px 8px !important;
   padding: 3px 10px !important;
-  backdrop-filter: var(--au-l2-filter);
+  /* no backdrop-filter here: the label mutates on every link hover and all
+   * through page load, and the content behind repaints continuously — a
+   * blur would re-run per frame while the tint is ~95% opaque anyway */
 }

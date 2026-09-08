@@ -12,6 +12,27 @@
   min-width: 300px;
 }
 
+.au-onboard-hello {
+  margin: 12px 14px 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--au-edge-hairline);
+}
+
+.au-onboard-title {
+  font-size: 1.12em;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  color: var(--au-ink-1);
+  background: linear-gradient(to right, var(--au-aurum-strong), var(--au-ink-1) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.au-onboard-note {
+  margin: 4px 0 0 !important;
+}
+
 .au-setup-header {
   font-size: 0.82em;
   font-weight: 600;

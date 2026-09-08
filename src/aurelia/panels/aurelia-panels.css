@@ -2,26 +2,52 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* Panels (app menu, popovers) as L3 overlay glass. Panels are native popup
- * windows: their glass comes from widget.windows.mica.popups (OS acrylic) at
- * full glass level, plus our tint + edge. */
+/* Panels (app menu, popovers) and menus as L3 overlay glass. FF155 draws
+ * the popup frame on the shadow-DOM ::part(content), themed through the
+ * --panel-* tokens — the sanctioned override path; styling the host paints
+ * a second frame on top. The popup window reserves
+ * --panel-box-shadow-margin of click-through room around the content and
+ * compensates its own anchoring for it, so the deep shadow needs a matching
+ * margin or it clips at the window edge. */
 
 panel,
 menupopup {
-  --panel-background: var(--au-l3-tint);
   --panel-background-color: var(--au-l3-tint);
-  --panel-border-color: var(--au-edge-hairline);
-  --panel-border-radius: var(--au-r-l);
-  --panel-box-shadow: var(--au-shadow-deep);
-  --panel-color: var(--au-ink-1);
-  --arrowpanel-background: var(--au-l3-tint);
-  --arrowpanel-border-color: var(--au-edge-hairline);
-  --arrowpanel-border-radius: var(--au-r-l);
-  --arrowpanel-color: var(--au-ink-1);
+  --panel-text-color: var(--au-ink-1);
 }
 
-.panel-arrowcontent {
-  box-shadow: var(--au-glass-edge) !important;
+panel {
+  --panel-border-color: var(--au-edge-hairline);
+  --panel-border-radius: var(--au-r-l);
+  --panel-box-shadow: inset 0 1px 0 0 var(--au-edge-light),
+                      var(--au-shadow-deep);
+  --panel-box-shadow-margin: 28px;
+}
+
+/* menus get the same frame, except under Windows mica popups where the OS
+ * draws backdrop, border, radius and shadow (menu.css zeroes them there) */
+@media not (-moz-windows-mica-popups) {
+  menupopup {
+    --panel-border-color: var(--au-edge-hairline);
+    --panel-border-radius: var(--au-r-m);
+    --panel-box-shadow: inset 0 1px 0 0 var(--au-edge-light),
+                        var(--au-shadow-deep);
+    --panel-box-shadow-margin: 28px;
+  }
+}
+
+/* panel-styled menus (bookmarks button, places chevron, sidebar menu,
+ * tab-group preview): panelUI-shared.css resets their --panel-* tokens to
+ * `inherit` at class specificity, beating the element rules above — restate
+ * the Aurelia values at the same specificity so the deep shadow keeps its
+ * 28px margin instead of clipping at the stock 4px */
+.toolbar-menupopup,
+.toolbar-menupopup menupopup {
+  --panel-background-color: var(--au-l3-tint);
+  --panel-text-color: var(--au-ink-1);
+  --panel-border-color: var(--au-edge-hairline);
+  --panel-border-radius: var(--au-r-l);
+  --panel-box-shadow-margin: 28px;
 }
 
 panelview {

@@ -30,8 +30,9 @@
   outline: none;
   box-shadow: none;
   background: transparent;
-  transition: background-color var(--au-dur-2) var(--au-ease),
-              box-shadow var(--au-dur-2) var(--au-ease);
+  /* background-color only: it runs on the compositor; a box-shadow
+   * transition would repaint the pill on the main thread every frame */
+  transition: background-color var(--au-dur-2) var(--au-ease);
 }
 
 /* hover: a hint of glass */

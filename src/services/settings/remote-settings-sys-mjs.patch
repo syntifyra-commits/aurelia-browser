@@ -10,7 +10,7 @@ index b180cfc850ee36dcad3e2886c4bf3bb9d4b748e1..be6c1eaa5aa7a85d119162b0afb21513
 +// copy would overwrite the curated data (e.g. the search engine list).
 +const AURELIA_DUMP_ONLY_COLLECTIONS = [
 +  "search-config-v2",
-+  "search-config-overrides",
++  "search-config-overrides-v2",
 +];
 +
  const PREF_SETTINGS_BRANCH = "services.settings.";

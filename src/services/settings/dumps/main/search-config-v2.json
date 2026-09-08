@@ -115,7 +115,7 @@
     {
       "globalDefault": "ddg",
       "id": "f3891684-2348-4e7a-9765-0c5d2d0ab1b9",
-      "last_modified": 1702906502241,
+      "last_modified": 1788846893561,
       "recordType": "defaultEngines",
       "schema": 1702901837584,
       "specificDefaults": [],
@@ -148,13 +148,13 @@
       },
       "id": "04e99a38-13ee-47d8-8aa4-64482b3dea99",
       "identifier": "ddg",
-      "last_modified": 1718719100285,
+      "last_modified": 1788846893561,
       "recordType": "engine",
       "schema": 1718698362015,
       "variants": [
         {
           "environment": {
-            "allRegions": true
+            "allRegionsAndLocales": true
           }
         }
       ]
@@ -185,13 +185,13 @@
       },
       "id": "e8e4a7e3-aead-43e3-887d-4064a186bd70",
       "identifier": "ecosia",
-      "last_modified": 1783024776556,
+      "last_modified": 1788846893561,
       "recordType": "engine",
       "schema": 1782777609128,
       "variants": [
         {
           "environment": {
-            "allRegions": true
+            "allRegionsAndLocales": true
           }
         }
       ]
@@ -262,13 +262,13 @@
       },
       "id": "7ace4aa1-e762-4f4b-87b9-b23b3c3a930b",
       "identifier": "google",
-      "last_modified": 1774874010729,
+      "last_modified": 1788846893561,
       "recordType": "engine",
       "schema": 1774656007453,
       "variants": [
         {
           "environment": {
-            "allRegions": true
+            "allRegionsAndLocales": true
           }
         }
       ]
@@ -299,13 +299,13 @@
       },
       "id": "2e62746e-b90a-42ee-b0f2-9ed0e1e2eaf0",
       "identifier": "qwant",
-      "last_modified": 1718719100293,
+      "last_modified": 1788846893561,
       "recordType": "engine",
       "schema": 1718698472747,
       "variants": [
         {
           "environment": {
-            "allRegions": true
+            "allRegionsAndLocales": true
           }
         }
       ]
@@ -323,20 +323,20 @@
             "searchTermParamName": "q"
           },
           "suggestions": {
-            "base": "https://www.startpage.com/suggestions?partner=apex&format=opensearch",
+            "base": "https://www.startpage.com/suggestions?format=opensearch",
             "searchTermParamName": "q"
           }
         }
       },
       "id": "5fb2256b-fdb0-42e8-8d8a-0d633b14e8d5",
       "identifier": "startpage",
-      "last_modified": 1788287341804,
+      "last_modified": 1788846893561,
       "recordType": "engine",
       "schema": 1787616009143,
       "variants": [
         {
           "environment": {
-            "allRegions": true
+            "allRegionsAndLocales": true
           }
         }
       ]
@@ -4433,7 +4433,7 @@
       "recordType": "engine",
       "identifier": "brave",
       "id": "aurelia-brave-search-0001",
-      "last_modified": 1,
+      "last_modified": 1788846893561,
       "schema": 1,
       "base": {
         "aliases": [
@@ -4455,11 +4455,11 @@
       "variants": [
         {
           "environment": {
-            "allRegions": true
+            "allRegionsAndLocales": true
           }
         }
       ]
     }
   ],
-  "timestamp": 1788287341804
+  "timestamp": 1788846893561
 }

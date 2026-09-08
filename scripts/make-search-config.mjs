@@ -15,7 +15,17 @@ const KEEP = new Set(["ddg", "startpage", "ecosia", "qwant", "google"]);
 
 const dump = JSON.parse(readFileSync(srcPath, "utf8"));
 
-// drop Mozilla partner/affiliate codes from engine URLs
+// RemoteSettingsClient only re-imports a packaged dump into an existing
+// profile when its timestamp is NEWER than the copy already in IndexedDB —
+// and sync can never refresh these collections (dump-only patch). So every
+// regeneration must advance the changeset timestamp, and the records we
+// rewrite carry it as their last_modified.
+const stamp = Date.now();
+dump.timestamp = stamp;
+
+// drop Mozilla partner/affiliate codes from engine URLs — both the
+// {partnerCode} template params and codes baked directly into a base URL's
+// query string (e.g. Startpage's suggestions "?partner=apex")
 function stripPartnerCode(engine) {
   delete engine.base.partnerCode;
   for (const url of Object.values(engine.base.urls ?? {})) {
@@ -24,6 +34,13 @@ function stripPartnerCode(engine) {
         p => !String(p.value ?? "").includes("{partnerCode}")
       );
       if (!url.params.length) delete url.params;
+    }
+    if (typeof url.base === "string" && url.base.includes("?")) {
+      const [origin, query] = url.base.split("?");
+      const params = new URLSearchParams(query);
+      params.delete("partner");
+      const rest = params.toString();
+      url.base = rest ? `${origin}?${rest}` : origin;
     }
   }
   for (const variant of engine.variants ?? []) {
@@ -36,7 +53,7 @@ const braveRecord = {
   recordType: "engine",
   identifier: "brave",
   id: "aurelia-brave-search-0001",
-  last_modified: 1,
+  last_modified: stamp,
   schema: 1,
   base: {
     aliases: ["brave"],
@@ -53,7 +70,7 @@ const braveRecord = {
       },
     },
   },
-  variants: [{ environment: { allRegions: true } }],
+  variants: [{ environment: { allRegionsAndLocales: true } }],
 };
 
 dump.data = dump.data.flatMap(record => {
@@ -61,8 +78,9 @@ dump.data = dump.data.flatMap(record => {
     const id = record.identifier;
     if (KEEP.has(id)) {
       // generalists become available everywhere, without affiliate tags
-      record.variants = [{ environment: { allRegions: true } }];
+      record.variants = [{ environment: { allRegionsAndLocales: true } }];
       stripPartnerCode(record);
+      record.last_modified = stamp;
       return [record];
     }
     if (id.startsWith("wikipedia")) {
@@ -74,6 +92,7 @@ dump.data = dump.data.flatMap(record => {
     record.globalDefault = "ddg";
     record.globalDefaultPrivate = "ddg";
     record.specificDefaults = [];
+    record.last_modified = stamp;
     return [record];
   }
   if (record.recordType === "engineOrders") {

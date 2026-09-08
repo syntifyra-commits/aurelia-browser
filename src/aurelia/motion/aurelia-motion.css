@@ -3,40 +3,62 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* Aurelia motion system. Spectacular in the detail, calm in the whole.
- * Everything is transform/opacity; nothing animates above a
- * backdrop-filter region. */
+ * Everything is transform/opacity/background-color — the compositor-
+ * animatable set; nothing animates filter or layout properties, and
+ * nothing extends an engine transition the popup machinery waits on
+ * (popupshown/[animating] defer until transitionend — a longer transition
+ * is a longer input-dead window).
+ * Popup entry keyframes are gated on per-open attributes ([animate="open"]
+ * from panel.js, [au-open] from AureliaMotion) because popup frames persist
+ * while closed — an unconditional animation would play once per window.
+ * Two tiers, both live-toggleable from the Setup panel:
+ *   base  — aurelia.motion.enabled: calm functional motion
+ *   flair — aurelia.motion.flair:   showpiece swipes and springs */
 
 @media -moz-pref("aurelia.motion.enabled") and (prefers-reduced-motion: no-preference) {
-  /* ── tabs: unfold on open, neighbors glide on close ──
-   * Firefox drives open/close through --tab-width-transition and waits for
-   * transitionend(max-width), so we retune the variable, never the property. */
-  .tabbrowser-tab {
-    --tab-width-transition: min-width var(--au-dur-3) var(--au-ease),
-                            max-width var(--au-dur-3) var(--au-ease);
-  }
-  /* closing feels snappier than opening */
-  .tabbrowser-tab:not([fadein]) {
-    --tab-width-transition: min-width var(--au-dur-2) var(--au-ease),
-                            max-width var(--au-dur-2) var(--au-ease);
-  }
-  .tabbrowser-tab[fadein]:not([pinned]) > .tab-stack > .tab-content {
+  /* ── tabs ──
+   * The stock min/max-width transition (100ms) reflows the whole strip per
+   * frame — it stays at stock speed; the transform keyframes on the content
+   * carry the visible flourish. [au-animate-open] is stamped by
+   * AureliaMotion only for genuinely animated opens, so session restores
+   * never unfold in bulk. */
+  .tabbrowser-tab[au-animate-open][fadein]:not([pinned]) > .tab-stack > .tab-content {
     animation: au-tab-unfold var(--au-dur-3) var(--au-ease);
     transform-origin: 16% 85%;
   }
 
-  /* ── panels & menus: grow from their anchor ── */
+  /* ── panels & menus: grow from their anchor ──
+   * Neutralize Gecko's 70px glide transition: with no property change on
+   * [animate="open"], no transition starts, popupshown fires at first
+   * layout, and [animating] never blocks input. The entry keyframes below
+   * own the visible motion instead. */
+  :is(panel[type="arrow"], .animatable-menupopup) {
+    opacity: 1;
+    transform: none;
+  }
   panel[type="arrow"],
   menupopup {
     transform-origin: var(--au-origin, top left);
+  }
+  panel[type="arrow"][animate="open"] {
     animation: au-pop-in var(--au-dur-2) var(--au-ease);
   }
-  /* content settles with a soft blur-in, on the inner container only */
+  /* mica menus open in an OS-drawn acrylic window CSS cannot animate on
+   * Windows — they open natively; everywhere else menus grow from their
+   * anchor */
+  @media not (-moz-windows-mica-popups) {
+    .animatable-menupopup[animate="open"],
+    menupopup[au-open] {
+      animation: au-pop-in var(--au-dur-2) var(--au-ease);
+    }
+  }
+  /* content settles softly — opacity/transform only */
   panelview > .panel-subview-body {
     animation: au-settle var(--au-dur-3) var(--au-ease-out);
   }
-  panelmultiview {
-    --panelui-subview-transition-duration: var(--au-dur-2);
-  }
+  /* subview slide stays at the stock 150ms: the same variable also drives
+   * main-thread height transitions and an input-blocking [transitioning]
+   * window */
 
   /* ── buttons: subtle press ── */
   .toolbarbutton-1 > .toolbarbutton-icon,
@@ -53,24 +75,115 @@
   }
 }
 
-/* reduced motion (system or aurelia.motion.enabled=false): quiet fades only */
-@media (prefers-reduced-motion: reduce) {
-  panel[type="arrow"],
-  menupopup {
-    animation: au-fade var(--au-dur-1) linear;
+/* ── flair: unnecessary, delightful, one toggle away ────────────────────
+ * Side-swipes and springs. Every rule is transform/opacity, and none of it
+ * touches the engine's waited-on transitions, so nothing here can block
+ * input or stall the popup machinery. */
+@media -moz-pref("aurelia.motion.enabled") and -moz-pref("aurelia.motion.flair") and (prefers-reduced-motion: no-preference) {
+  /* tab open: side-swipe unfold with a slight overshoot. (No close-swipe
+   * counterpart: stock FF hides all tab content the instant [fadein] is
+   * removed, so an exit animation could never render.) */
+  .tabbrowser-tab[au-animate-open][fadein]:not([pinned]) > .tab-stack > .tab-content {
+    animation: au-tab-swipe-in var(--au-dur-3) var(--au-ease-out);
+  }
+  /* tab switch: the pill pops, the page side-swipes in — short and small,
+   * so a dropped first frame on heavy pages stays invisible (not in split
+   * view, where .deck-selected hops between two visible panes) */
+  .tabbrowser-tab[visuallyselected] .tab-background {
+    animation: au-pill-pop var(--au-dur-2) var(--au-ease);
+  }
+  #tabbrowser-tabpanels > .deck-selected:not(.split-view-panel) {
+    animation: au-content-swipe 120ms var(--au-ease-out);
+  }
+
+  /* panels & menus: springy pop with overshoot */
+  panel[type="arrow"][animate="open"] {
+    animation: au-pop-spring var(--au-dur-3) var(--au-ease-out);
+  }
+  @media not (-moz-windows-mica-popups) {
+    .animatable-menupopup[animate="open"],
+    menupopup[au-open] {
+      animation: au-pop-spring var(--au-dur-3) var(--au-ease-out);
+    }
+  }
+  /* subview side-swipe keeps stock timing, silkier curve */
+  panelmultiview {
+    --animation-easing-function: var(--au-ease);
+  }
+
+  /* findbar: capsule rises in */
+  findbar:not([hidden]) .findbar-container {
+    animation: au-rise-in var(--au-dur-3) var(--au-ease-out);
+  }
+  /* rung 1 gives the capsule a live backdrop blur — translating it would
+   * re-sample the 24px blur every frame, so it fades instead */
+  @media -moz-pref("aurelia.glass.level", 1), (not (-moz-windows-mica)) {
+    findbar:not([hidden]) .findbar-container {
+      animation: au-fade var(--au-dur-2) var(--au-ease-out);
+    }
+  }
+
+  /* urlbar results: bloom out of the capsule */
+  #urlbar[open] > .urlbarView {
+    animation: au-view-in var(--au-dur-2) var(--au-ease-out);
+  }
+
+  /* chrome entrance: the toolbox drops in as the reveal fades it through
+   * (opacity comes from the aureliainit transition in aurelia-base.css) */
+  #main-window:not([aureliainit]) #navigator-toolbox {
+    animation: au-chrome-drop var(--au-dur-4) var(--au-ease-out);
+  }
+
+  /* fullscreen warning: glide on the Aurelia ease (the translate transition
+   * must stay — the state machine waits for its transitionend) */
+  .pointerlockfswarning {
+    transition-duration: 420ms;
+    transition-timing-function: var(--au-ease);
+  }
+
+  /* toolbar icons: lift on hover (press scale from the base tier wins
+   * while :active) */
+  .toolbarbutton-1:not([disabled]):hover:not(:active) > .toolbarbutton-icon,
+  .toolbarbutton-1:not([disabled]):hover:not(:active) > .toolbarbutton-badge-stack {
+    transform: translateY(-1px);
   }
 }
-@media not -moz-pref("aurelia.motion.enabled") {
-  panel[type="arrow"],
-  menupopup {
-    animation: au-fade var(--au-dur-1) linear;
-  }
-}
+
+/* reduced motion / motion disabled: no rules needed — every Aurelia
+ * animation above is scoped to the pref + no-preference media, and the
+ * stock popup behavior (which honors prefers-reduced-motion itself)
+ * resurfaces untouched */
 
 @keyframes au-tab-unfold {
   from {
     opacity: 0;
     transform: scale(0.86) translateY(4px);
+  }
+}
+
+@keyframes au-tab-swipe-in {
+  from {
+    opacity: 0;
+    transform: translateX(-22px) scale(0.92);
+  }
+  70% {
+    opacity: 1;
+    transform: translateX(2px) scale(1.004);
+  }
+}
+
+@keyframes au-pill-pop {
+  from {
+    transform: scale(0.95);
+  }
+  65% {
+    transform: scale(1.012);
+  }
+}
+
+@keyframes au-content-swipe {
+  from {
+    transform: translateX(6px);
   }
 }
 
@@ -81,13 +194,41 @@
   }
 }
 
+@keyframes au-pop-spring {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.015);
+  }
+}
+
 @keyframes au-settle {
   from {
     opacity: 0;
-    filter: blur(6px);
+    transform: translateY(2px);
   }
-  to {
-    filter: blur(0);
+}
+
+@keyframes au-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes au-view-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes au-chrome-drop {
+  from {
+    transform: translateY(-10px);
   }
 }
 
